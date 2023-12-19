@@ -645,6 +645,7 @@ LOCATION_TYPE_MAP51 = 8  # 51地图坐标
 g_feed_like_id = 1
 g_feed_comment_id = 1
 
+contact_map = json.load(open(".\\result\\database\\contact.json", "r", encoding="utf-8"))
 
 class Feed(Column):
     def __init__(self):
@@ -721,7 +722,6 @@ class Feed(Column):
         return comment
 
     def process_remark(self):
-        contact_map = json.load(open(".\\result\\database\\contact.json", "r", encoding="utf-8"))
         self.account_remark = contact_map[self.account_id]["conRemark"] or contact_map[self.account_id]["nickname"]
         self.sender_remark = contact_map[self.sender_id]["conRemark"] or contact_map[self.sender_id]["nickname"]
         for i, like in enumerate(self.likes):
