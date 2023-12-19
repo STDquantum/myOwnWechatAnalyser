@@ -1,6 +1,10 @@
 import json
 import sqlite3
 import struct
+import requests
+import os
+import hashlib
+import time
 
 # 朋友圈类型
 MOMENT_TYPE_IMAGE = 1  # 正常文字图片
@@ -11,6 +15,12 @@ MOMENT_TYPE_COVER = 7  # 朋友圈封面
 MOMENT_TYPE_EMOJI = 10  # 分享了表情包
 MOMENT_TYPE_VIDEO = 15  # 视频
 MOMENT_TYPE_OAVIDEO = 28  # 视频号
+"""
+link_from: 视频创作者,
+link_content: 视频描述,
+link_url: 链接,
+link_image: 封面图片
+"""
 MOMENT_TYPE_APPLET = 30  # 小程序
 MOMENT_TYPE_MUSIC = 42  # 音乐
 
@@ -35,7 +45,7 @@ class SnsParser:
         ret = self.content[8][0][1]
         image = []
         if 5 in ret:
-            image = [ret[5][0][1][6][1]]
+            image = ret[5][0][1][6][1]
         return ret[3][1], image, ret[4][1]
 
     def get_video_share(self):
@@ -44,7 +54,14 @@ class SnsParser:
 
     def get_music_image(self):
         ret = self.content
-        return ret[7][0][1][3][1], ret[8][0][1][1][1], ret[8][0][1][3][1], ret[8][0][1][4][1], ret[8][0][1][5][0][1][6][1], ret[8][0][1][5][0][1][4][1]
+        return (
+            ret[7][0][1][3][1],
+            ret[8][0][1][1][1],
+            ret[8][0][1][3][1],
+            ret[8][0][1][4][1],
+            ret[8][0][1][5][0][1][6][1],
+            ret[8][0][1][5][0][1][4][1],
+        )
 
     def get_content_medias(self):
         ret = self._get_ts_value(self.content, 8)
@@ -645,26 +662,32 @@ LOCATION_TYPE_MAP51 = 8  # 51地图坐标
 g_feed_like_id = 1
 g_feed_comment_id = 1
 
-contact_map = json.load(open(".\\result\\database\\contact.json", "r", encoding="utf-8"))
+contact_map = json.load(
+    open(".\\result\\database\\contact.json", "r", encoding="utf-8")
+)
+
 
 class Feed(Column):
     def __init__(self):
         global g_feed_comment_id, g_feed_like_id
         super(Feed, self).__init__()
-        self.sns_id = None # 朋友圈ID[TEXT]
+        self.sns_id = None  # 朋友圈ID[TEXT]
         self.account_id = None  # 账号ID[TEXT]
-        self.account_name = None # 账号昵称[TEXT]
+        self.account_name = None  # 账号昵称[TEXT]
         self.sender_id = None  # 发布者ID[TEXT]
-        self.sender_remark = None # 发布者昵称[TEXT]
+        self.sender_remark = None  # 发布者昵称[TEXT]
         self.type = None  # 朋友圈类型[INT]
         self.content = None  # 文本[TEXT]
         self.image_path = []  # 图片地址[List]
+        self.custom_image_path = []  # 本地图片地址[List]
         self.video_path = []  # 视频地址[List]
+        self.custom_video_path = []  # 本地视频地址[List]
         self.timestamp = None  # 发布时间[INT]
         self.link_url = None  # 链接地址[TEXT]
         self.link_title = None  # 链接标题[TEXT]
         self.link_content = None  # 链接内容[TEXT]
         self.link_image = None  # 链接图片[TEXT]
+        self.custom_link_image = None  # 本地链接图片[TEXT]
         self.link_from = None  # 链接来源[TEXT]
         self.like_id = g_feed_like_id  # 赞ID[INT]
         g_feed_like_id += 1
@@ -722,13 +745,24 @@ class Feed(Column):
         return comment
 
     def process_remark(self):
-        self.account_remark = contact_map[self.account_id]["conRemark"] or contact_map[self.account_id]["nickname"]
-        self.sender_remark = contact_map[self.sender_id]["conRemark"] or contact_map[self.sender_id]["nickname"]
-        for i, like in enumerate(self.likes):
-            self.likes[i].sender_remark = contact_map[like.sender_id]["conRemark"] or contact_map[like.sender_id]["nickname"]
-        for i, comment in enumerate(self.comments):
-            self.comments[i].sender_remark = contact_map[comment.sender_id]["conRemark"] or contact_map[comment.sender_id]["nickname"]
-
+        self.account_remark = (
+            contact_map[self.account_id]["conRemark"]
+            or contact_map[self.account_id]["nickname"]
+        )
+        self.sender_remark = (
+            contact_map[self.sender_id]["conRemark"]
+            or contact_map[self.sender_id]["nickname"]
+        )
+        for like in self.likes:
+            like.sender_remark = (
+                contact_map[like.sender_id]["conRemark"]
+                or contact_map[like.sender_id]["nickname"]
+            )
+        for comment in self.comments:
+            comment.sender_remark = (
+                contact_map[comment.sender_id]["conRemark"]
+                or contact_map[comment.sender_id]["nickname"]
+            )
 
 
 class FeedLike(Column):
@@ -740,9 +774,12 @@ class FeedLike(Column):
         self.timestamp = None  # 发布时间[INT]
 
     def get_values(self):
-        return (self.like_id, self.sender_id, self.sender_remark, self.timestamp) + super(
-            FeedLike, self
-        ).get_values()
+        return (
+            self.like_id,
+            self.sender_id,
+            self.sender_remark,
+            self.timestamp,
+        ) + super(FeedLike, self).get_values()
 
 
 class FeedComment(Column):
@@ -775,14 +812,16 @@ class SnsParse:
     def _parse_wc_db(self, path="SnsMicroMsg.db"):
         conn = sqlite3.connect(path)
         c = conn.cursor()
-        readTable = c.execute("SELECT type, userName, content, attrBuf from SnsInfo where userName not like 'v3_%@stranger'")
-        res = []
+        readTable = c.execute(
+            "SELECT type, userName, content, attrBuf from SnsInfo where userName not like 'v3_%@stranger'"
+        )
+        snsList = []
         for ttype, username, content, attr in readTable:
-            ret = self._parse_wc_db_with_value(ttype, username, content, attr)
-            if ret != None:
-                res.append(ret)
+            feed = self._parse_wc_db_with_value(ttype, username, content, attr)
+            snsList.append(feed)
         conn.close()
-        return res
+        snsList.sort(key=lambda x: x.timestamp, reverse=True)
+        return snsList
 
     def _parse_wc_db_with_value(self, ttype, username, content_blob, attr_blob):
         content = None
@@ -811,17 +850,30 @@ class SnsParse:
             feed.image_path = [str(m) for m in medias]
         elif moment_type == MOMENT_TYPE_VIDEO:
             feed.video_path, feed.image_path = sns.get_type_video()
-
         elif moment_type == MOMENT_TYPE_SHARED:
-            feed.link_image = sns.get_content_medias()
+            medias = sns.get_content_medias()
+            if medias is not None:
+                feed.link_image = medias[0]
             feed.link_url, feed.link_title, feed.link_content = sns.get_url_info()
         elif moment_type == MOMENT_TYPE_MUSIC:
-            feed.link_from, feed.link_title, feed.link_content, feed.link_url, feed.link_image, feed.video_path = sns.get_music_image()
+            (
+                feed.link_from,
+                feed.link_title,
+                feed.link_content,
+                feed.link_url,
+                feed.link_image,
+                feed.video_path,
+            ) = sns.get_music_image()
             feed.video_path = [feed.video_path]
         elif moment_type == MOMENT_TYPE_COVER:
             feed.image_path = sns.get_content_medias()
         elif moment_type == MOMENT_TYPE_VIDEOSHARE:
-            feed.link_content, feed.link_url, feed.link_from, feed.link_image = sns.get_video_share()
+            (
+                feed.link_content,
+                feed.link_url,
+                feed.link_from,
+                feed.link_image,
+            ) = sns.get_video_share()
         elif moment_type == MOMENT_TYPE_OAVIDEO:
             (
                 feed.link_from,
@@ -838,7 +890,54 @@ class SnsParse:
 
         feed.process_remark()
 
-        return {
+        return feed
+
+
+class ImageDownload:
+    def __init__(self) -> None:
+        pass
+
+    def downloadImage(self, imageUrl: str | None):
+        if imageUrl is None or imageUrl == "":
+            return None
+        print(imageUrl)
+        md5 = hashlib.md5()
+        md5.update(imageUrl.encode("utf-8"))
+        md5_hash = md5.hexdigest()
+        image_root = "./result/images"
+        custom_path = os.path.join(image_root, md5_hash + ".jpg")
+        if os.path.exists(custom_path):
+            custom_path = "./image/" + os.path.basename(custom_path)
+            print(custom_path)
+            return custom_path
+        res = requests.get(imageUrl)
+        while res.status_code != 200:
+            time.sleep(2)
+            print("下载重试中")
+            res = requests.get(imageUrl)
+        custom_name = md5_hash + self.imageExt(res.content[0])
+        custom_path = os.path.join(image_root, custom_name)
+        with open(custom_path, "wb") as f:
+            f.write(res.content)
+        custom_path = "./image/" + os.path.basename(custom_path)
+        print(custom_path)
+        return custom_path
+
+    def downloadImages(self, snss: SnsParse):
+        os.makedirs(".\\result\\images", exist_ok=True)
+        for sns in snss:
+            if sns.sender_id != sns.account_id:
+                continue
+            sns.custom_image_path = []
+            for image in sns.image_path:
+                sns.custom_image_path.append(self.downloadImage(image))
+
+            sns.custom_link_image = self.downloadImage(sns.link_image)
+
+def to_json(snsList: list):
+    jsonList = []
+    for feed in snsList:
+        jsonList.append({
             "sns_id": feed.sns_id,
             "account_id": feed.account_id,
             "account_remark": feed.account_remark,
@@ -862,6 +961,7 @@ class SnsParse:
                 for com in feed.comments
             ],
             "image_path": feed.image_path,
+            "custom_image_path": feed.custom_image_path,
             "like_count": feed.like_count,
             "like_id": feed.like_id,
             "likes": [
@@ -876,6 +976,7 @@ class SnsParse:
             "link_content": feed.link_content,
             "link_from": feed.link_from,
             "link_image": feed.link_image,
+            "custom_link_image": feed.custom_link_image,
             "link_title": feed.link_title,
             "link_url": feed.link_url,
             "location_address": feed.location_address,
@@ -886,7 +987,9 @@ class SnsParse:
             "source": feed.source,
             "repeated": feed.repeated,
             "video_path": feed.video_path,
-        }
+            "custom_video_path": feed.custom_video_path,
+        })
+    return jsonList
 
 
 if __name__ == "__main__":
@@ -894,10 +997,16 @@ if __name__ == "__main__":
     db = SnsParse()
     xiao = 0
     Account = ["wxid_05rvkbftizq822", "wxid_8cm21ui550e729"][xiao]
-    snsData = db._parse_wc_db(["SnsMicroMsg.db", "SnsMicroMsg(1).db"][xiao])
+    snsList = db._parse_wc_db(["SnsMicroMsg.db", "SnsMicroMsg(1).db"][xiao])
+    ImageDownload().downloadImages(snsList)
+    jsonList = to_json(snsList)
     json.dump(
-        snsData,
-        open(["result\\database\\info.json", "result\\database\\info(1).json"][xiao], "w", encoding="utf-8"),
+        jsonList,
+        open(
+            ["result\\database\\info.json", "result\\database\\info(1).json"][xiao],
+            "w",
+            encoding="utf-8",
+        ),
         indent=4,
         ensure_ascii=False,
     )
