@@ -22,6 +22,9 @@ class SnsParser:
         if self._get_ts_value(self.content, 2) != self._get_ts_value(self.attr, 2):
             self.attr = None
 
+    def get_sns_id(self):
+        return self.content[1][1]
+
     def get_username(self):
         return self._get_ts_value(self.content, 2)
 
@@ -127,7 +130,7 @@ class SnsParser:
                     if type(like) == dict:
                         fl = feed.create_like()
                         fl.sender_id = self._get_ts_value(like, 1)
-                        fl.sender_name = self._get_ts_value(like, 2)
+                        fl.sender_remark = self._get_ts_value(like, 2)
                         try:
                             fl.timestamp = int(self._get_ts_value(like, 6))
                         except Exception as e:
@@ -146,7 +149,7 @@ class SnsParser:
                     if type(comment) == dict:
                         fm = feed.create_comment()
                         fm.sender_id = self._get_ts_value(comment, 1)
-                        fm.sender_name = self._get_ts_value(comment, 2)
+                        fm.sender_remark = self._get_ts_value(comment, 2)
                         fm.ref_user_id = self._get_ts_value(comment, 9)
                         if fm.ref_user_id == "":
                             fm.ref_user_id = None
@@ -192,17 +195,17 @@ class tencent_struct:
         4: ("", "s"),
     }
     __aqt__ = {
-        1: ("", "f"),
-        2: ("", "f"),
+        1: ("宽", "f"),
+        2: ("高", "f"),
         3: ("", "f"),
     }
     __aqr__ = {
         1: ("", "s"),
         2: ("", "I"),
         3: ("", "s"),
-        4: ("", "s"),
+        4: ("原图", "s"),
         5: ("", "I"),
-        6: ("", "s"),
+        6: ("缩略图", "s"),
         7: ("", "I"),
         8: ("", "I"),
         9: ("", "s"),
@@ -233,8 +236,8 @@ class tencent_struct:
         35: ("", "b"),
     }
     __amq__ = {  # location
-        1: ("", "f"),  # longitude
-        2: ("", "f"),  # latitude
+        1: ("longitude 经度", "f"),
+        2: ("latitude 纬度", "f"),
         3: ("", "s"),
         4: ("", "s"),
         5: ("", "s"),
@@ -321,14 +324,14 @@ class tencent_struct:
         8: ("", "s"),
     }
     __bjs__ = {  # wechat sns feed
-        1: ("", "s"),
-        2: ("", "s"),
+        1: ("朋友圈id", "s"),
+        2: ("sender_id", "s"),
         3: ("", "I"),
-        4: ("", "I"),
+        4: ("timestamp 时间戳", "I"),
         5: ("", "s"),
-        6: ("", __amq__),
+        6: ("位置信息", __amq__),
         7: ("", __cr__),
-        8: ("", __od__),
+        8: ("多媒体信息", __od__),
         9: ("", "s"),
         10: ("", "s"),
         11: ("", "s"),
@@ -647,8 +650,11 @@ class Feed(Column):
     def __init__(self):
         global g_feed_comment_id, g_feed_like_id
         super(Feed, self).__init__()
+        self.sns_id = None # 朋友圈ID[TEXT]
         self.account_id = None  # 账号ID[TEXT]
+        self.account_name = None # 账号昵称[TEXT]
         self.sender_id = None  # 发布者ID[TEXT]
+        self.sender_remark = None # 发布者昵称[TEXT]
         self.type = None  # 朋友圈类型[INT]
         self.content = None  # 文本[TEXT]
         self.image_path = []  # 图片地址[List]
@@ -714,17 +720,27 @@ class Feed(Column):
         self.comments.append(comment)
         return comment
 
+    def process_remark(self):
+        contact_map = json.load(open(".\\result\\database\\contact.json", "r", encoding="utf-8"))
+        self.account_remark = contact_map[self.account_id]["conRemark"] or contact_map[self.account_id]["nickname"]
+        self.sender_remark = contact_map[self.sender_id]["conRemark"] or contact_map[self.sender_id]["nickname"]
+        for i, like in enumerate(self.likes):
+            self.likes[i].sender_remark = contact_map[like.sender_id]["conRemark"] or contact_map[like.sender_id]["nickname"]
+        for i, comment in enumerate(self.comments):
+            self.comments[i].sender_remark = contact_map[comment.sender_id]["conRemark"] or contact_map[comment.sender_id]["nickname"]
+
+
 
 class FeedLike(Column):
     def __init__(self):
         super(FeedLike, self).__init__()
         self.like_id = None  # 赞ID[INT]
         self.sender_id = None  # 发布者ID[TEXT]
-        self.sender_name = None  # 发布者昵称[TEXT]
+        self.sender_remark = None  # 发布者昵称[TEXT]
         self.timestamp = None  # 发布时间[INT]
 
     def get_values(self):
-        return (self.like_id, self.sender_id, self.sender_name, self.timestamp) + super(
+        return (self.like_id, self.sender_id, self.sender_remark, self.timestamp) + super(
             FeedLike, self
         ).get_values()
 
@@ -734,7 +750,7 @@ class FeedComment(Column):
         super(FeedComment, self).__init__()
         self.comment_id = None  # 评论ID[INT]
         self.sender_id = None  # 发布者ID[TEXT]
-        self.sender_name = None  # 发布者昵称[TEXT]
+        self.sender_remark = None  # 发布者昵称[TEXT]
         self.ref_user_id = None  # 回复用户ID[TEXT]
         self.ref_user_name = None  # 回复用户昵称[TEXT]
         self.content = None  # 评论内容[TEXT]
@@ -744,7 +760,7 @@ class FeedComment(Column):
         return (
             self.comment_id,
             self.sender_id,
-            self.sender_name,
+            self.sender_remark,
             self.ref_user_id,
             self.ref_user_name,
             self.content,
@@ -759,12 +775,13 @@ class SnsParse:
     def _parse_wc_db(self, path="SnsMicroMsg.db"):
         conn = sqlite3.connect(path)
         c = conn.cursor()
-        readTable = c.execute("SELECT type, userName, content, attrBuf from SnsInfo")
+        readTable = c.execute("SELECT type, userName, content, attrBuf from SnsInfo where userName not like 'v3_%@stranger'")
         res = []
         for ttype, username, content, attr in readTable:
             ret = self._parse_wc_db_with_value(ttype, username, content, attr)
             if ret != None:
                 res.append(ret)
+        conn.close()
         return res
 
     def _parse_wc_db_with_value(self, ttype, username, content_blob, attr_blob):
@@ -779,15 +796,13 @@ class SnsParse:
             return
 
         moment_type = ttype
-        # if ttype == 30:
-        #     print(content)
-        #     exit(0)
 
         feed = Feed()
         feed.type = ttype
         global Account
         feed.account_id = Account
         feed.sender_id = username
+        feed.sns_id = sns.get_sns_id()
         feed.content = sns.get_content_text()
         feed.timestamp = sns.get_timestamp()
 
@@ -820,9 +835,15 @@ class SnsParse:
         sns.get_location(feed)
         sns.get_likes(feed)
         sns.get_comments(feed)
+
+        feed.process_remark()
+
         return {
+            "sns_id": feed.sns_id,
             "account_id": feed.account_id,
+            "account_remark": feed.account_remark,
             "sender_id": feed.sender_id,
+            "sender_remark": feed.sender_remark,
             "timestamp": feed.timestamp,
             "type": feed.type,
             "content": feed.content,
@@ -832,7 +853,7 @@ class SnsParse:
                 {
                     "comment_id": com.comment_id,
                     "sender_id": com.sender_id,
-                    "sender_name": com.sender_name,
+                    "sender_remark": com.sender_remark,
                     "ref_user_id": com.ref_user_id,
                     "ref_user_name": com.ref_user_name,
                     "content": com.content,
@@ -847,7 +868,7 @@ class SnsParse:
                 {
                     "like_id": lik.like_id,
                     "sender_id": lik.sender_id,
-                    "sender_name": lik.sender_name,
+                    "sender_remark": lik.sender_remark,
                     "timestamp": lik.timestamp,
                 }
                 for lik in feed.likes
@@ -869,12 +890,14 @@ class SnsParse:
 
 
 if __name__ == "__main__":
+    # os.system('''adb shell "su -c 'cp /data/data/com.tencent.mm/MicroMsg/867cc0443b3e8056c45b5e70aaa36197/SnsMicroMsg.db /sdcard/文件/SnsMicroMsg.db'" && adb pull /sdcard/文件/SnsMicroMsg.db SnsMicroMsg.db''')
     db = SnsParse()
     xiao = 0
     Account = ["wxid_05rvkbftizq822", "wxid_8cm21ui550e729"][xiao]
+    snsData = db._parse_wc_db(["SnsMicroMsg.db", "SnsMicroMsg(1).db"][xiao])
     json.dump(
-        db._parse_wc_db(["SnsMicroMsg.db", "SnsMicroMsg(1).db"][xiao]),
-        open(["info.json", "info(1).json"][xiao], "w", encoding="utf-8"),
+        snsData,
+        open(["result\\database\\info.json", "result\\database\\info(1).json"][xiao], "w", encoding="utf-8"),
         indent=4,
         ensure_ascii=False,
     )

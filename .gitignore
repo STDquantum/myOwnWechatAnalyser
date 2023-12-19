@@ -1,3 +1,7 @@
 log/*
-*.db
+*.db*
 tool/*
+result/*
+.vscode
+test*
+*.silk

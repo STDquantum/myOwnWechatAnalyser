@@ -101,5 +101,6 @@ def parseSomeoneMessage(wxid):
 
 
 if __name__ == "__main__":
+    # os.system('''adb shell "su -c 'cp /data/data/com.tencent.mm/MicroMsg/867cc0443b3e8056c45b5e70aaa36197/EnMicroMsg.db /sdcard/文件/EnMicroMsg.db'" && adb pull /sdcard/文件/EnMicroMsg.db EnMicroMsg.db''')
     parseDatabase()
     processContact()
