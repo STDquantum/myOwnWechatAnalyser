@@ -897,7 +897,7 @@ class ImageDownload:
     def __init__(self) -> None:
         pass
 
-    def downloadImage(self, imageUrl: str | None):
+    def downloadImage(self, imageUrl: str | None, timestamp: int):
         if imageUrl is None or imageUrl == "":
             return None
         print(imageUrl)
@@ -907,6 +907,7 @@ class ImageDownload:
         image_root = "./result/images"
         custom_path = os.path.join(image_root, md5_hash + ".jpg")
         if os.path.exists(custom_path):
+            os.utime(custom_path, (timestamp, timestamp))
             custom_path = "./image/" + os.path.basename(custom_path)
             print(custom_path)
             return custom_path
@@ -919,6 +920,7 @@ class ImageDownload:
         custom_path = os.path.join(image_root, custom_name)
         with open(custom_path, "wb") as f:
             f.write(res.content)
+        os.utime(custom_path, (timestamp, timestamp))
         custom_path = "./image/" + os.path.basename(custom_path)
         print(custom_path)
         return custom_path
@@ -930,9 +932,9 @@ class ImageDownload:
                 continue
             sns.custom_image_path = []
             for image in sns.image_path:
-                sns.custom_image_path.append(self.downloadImage(image))
+                sns.custom_image_path.append(self.downloadImage(image, sns.timestamp))
 
-            sns.custom_link_image = self.downloadImage(sns.link_image)
+            sns.custom_link_image = self.downloadImage(sns.link_image, sns.timestamp)
 
 def to_json(snsList: list):
     jsonList = []
