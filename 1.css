@@ -1,0 +1,64 @@
+
+body {
+    display: flex;
+    justify-content: center;
+}
+
+.sns {
+    width: 450px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 0.5px solid #e0e0e0;
+}
+
+img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.sns-header {
+    height: 25em;
+    overflow: hidden;
+}
+
+.sns-cover {
+    height: 18em;
+    overflow: hidden;
+}
+
+.owner {
+    margin-top: -40px;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.owner-avatar {
+    height: 65px;
+    width: 65px;
+    margin-right: 17px;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.owner-name {
+    margin-right: 8px;
+    margin-bottom: 19px;
+    font-size: 0.9em;
+    color: azure;
+    letter-spacing: 1.5px;
+    text-shadow: 0 0 8px darkgray;
+}
+
+.item {
+    display: flex;
+    flex-direction: row;
+}
+
+.avatar-box {
+    height: 39px;
+    width: 39px;
+}

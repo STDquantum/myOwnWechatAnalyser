@@ -936,61 +936,64 @@ class ImageDownload:
 
             sns.custom_link_image = self.downloadImage(sns.link_image, sns.timestamp)
 
+
 def to_json(snsList: list):
     jsonList = []
     for feed in snsList:
-        jsonList.append({
-            "sns_id": feed.sns_id,
-            "account_id": feed.account_id,
-            "account_remark": feed.account_remark,
-            "sender_id": feed.sender_id,
-            "sender_remark": feed.sender_remark,
-            "timestamp": feed.timestamp,
-            "type": feed.type,
-            "content": feed.content,
-            "comment_count": feed.comment_count,
-            "comment_id": feed.comment_id,
-            "comments": [
-                {
-                    "comment_id": com.comment_id,
-                    "sender_id": com.sender_id,
-                    "sender_remark": com.sender_remark,
-                    "ref_user_id": com.ref_user_id,
-                    "ref_user_name": com.ref_user_name,
-                    "content": com.content,
-                    "timestamp": com.timestamp,
-                }
-                for com in feed.comments
-            ],
-            "image_path": feed.image_path,
-            "custom_image_path": feed.custom_image_path,
-            "like_count": feed.like_count,
-            "like_id": feed.like_id,
-            "likes": [
-                {
-                    "like_id": lik.like_id,
-                    "sender_id": lik.sender_id,
-                    "sender_remark": lik.sender_remark,
-                    "timestamp": lik.timestamp,
-                }
-                for lik in feed.likes
-            ],
-            "link_content": feed.link_content,
-            "link_from": feed.link_from,
-            "link_image": feed.link_image,
-            "custom_link_image": feed.custom_link_image,
-            "link_title": feed.link_title,
-            "link_url": feed.link_url,
-            "location_address": feed.location_address,
-            "location_elevation": feed.location_elevation,
-            "location_latitude": feed.location_latitude,
-            "location_longitude": feed.location_longitude,
-            "location_type": feed.location_type,
-            "source": feed.source,
-            "repeated": feed.repeated,
-            "video_path": feed.video_path,
-            "custom_video_path": feed.custom_video_path,
-        })
+        jsonList.append(
+            {
+                "sns_id": feed.sns_id,
+                "account_id": feed.account_id,
+                "account_remark": feed.account_remark,
+                "sender_id": feed.sender_id,
+                "sender_remark": feed.sender_remark,
+                "timestamp": feed.timestamp,
+                "type": feed.type,
+                "content": feed.content,
+                "comment_count": feed.comment_count,
+                "comment_id": feed.comment_id,
+                "comments": [
+                    {
+                        "comment_id": com.comment_id,
+                        "sender_id": com.sender_id,
+                        "sender_remark": com.sender_remark,
+                        "ref_user_id": com.ref_user_id,
+                        "ref_user_name": com.ref_user_name,
+                        "content": com.content,
+                        "timestamp": com.timestamp,
+                    }
+                    for com in feed.comments
+                ],
+                "image_path": feed.image_path,
+                "custom_image_path": feed.custom_image_path,
+                "like_count": feed.like_count,
+                "like_id": feed.like_id,
+                "likes": [
+                    {
+                        "like_id": lik.like_id,
+                        "sender_id": lik.sender_id,
+                        "sender_remark": lik.sender_remark,
+                        "timestamp": lik.timestamp,
+                    }
+                    for lik in feed.likes
+                ],
+                "link_content": feed.link_content,
+                "link_from": feed.link_from,
+                "link_image": feed.link_image,
+                "custom_link_image": feed.custom_link_image,
+                "link_title": feed.link_title,
+                "link_url": feed.link_url,
+                "location_address": feed.location_address,
+                "location_elevation": feed.location_elevation,
+                "location_latitude": feed.location_latitude,
+                "location_longitude": feed.location_longitude,
+                "location_type": feed.location_type,
+                "source": feed.source,
+                "repeated": feed.repeated,
+                "video_path": feed.video_path,
+                "custom_video_path": feed.custom_video_path,
+            }
+        )
     return jsonList
 
 
