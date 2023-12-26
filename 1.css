@@ -56,6 +56,8 @@ img {
     display: flex;
     flex-direction: row;
     margin-top: 10px;
+    padding-bottom: 5px;
+    border-bottom: 0.3px solid rgb(235, 235, 235);
 }
 
 .avatar-box>img {
@@ -73,7 +75,8 @@ img {
 
 .sender_name {
     color: rgb(67, 86, 145);
-    text-shadow: 0 0 0 rgba(0, 0, 0, 1);
+    font-weight: bold;
+    /* text-shadow: 0 0 0 rgba(0, 0, 0, 1); */
 }
 
 .sns-content {
@@ -112,21 +115,59 @@ img {
 
 .time {
     font-size: small;
-    margin-top: 6px;
+    margin-top: 3px;
     color: slategray;
 }
 
-.likes {
+.location {
+    font-size: small;
+    margin-top: 7px;
+    color: rgb(91, 114, 181);
+}
+
+.likes-box {
     display: flex;
     flex-direction: row;
+    margin-top: 4px;
+    padding-top: 8px;
+    margin-right: 22px;
+    padding-bottom: 8px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom: 1px solid rgb(218, 218, 218);
+    background-color: rgb(236, 236, 236);
+}
+
+.like-container {
+    position: relative;
+    display: inline-block;
+}
+
+.like {
+    cursor: pointer;
+}
+
+.tooltip {
+    display: none;
+    margin-top: 2px;
+    position: absolute;
+    background-color: #333;
+    color: #fff;
+    padding: 5px;
+    border-radius: 5px;
+    white-space: nowrap;
+    z-index: 1;
 }
 
 .like-icon {
-    margin-top: 2px;
+    padding-left: 2px;
+    margin-left: 4px;
+    margin-top: 4px;
+    color: red;
 }
 
 .like-grid {
-    margin-left: 3px;
+    margin-left: 5px;
     width: 430px;
     display: grid;
     gap: 4px;
@@ -135,6 +176,8 @@ img {
 
 .like {
     display: block;
+    border-radius: 3px;
+    overflow: hidden;
 }
 
 .like>img {
@@ -142,9 +185,73 @@ img {
 }
 
 
-.divider {
-    width: 100%;
-    height: 0.2px;
-    background-color: lightgray;
-    margin-top: 10px;
+.comments-box {
+    display: flex;
+    flex-direction: row;
+    margin-right: 22px;
+    padding-bottom: 8px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+    background-color: rgb(236, 236, 236);
+}
+
+.comment-container {
+    margin-top: 9px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgb(218, 218, 218);
+}
+
+.comment-icon {
+    padding-left: 2px;
+    margin-left: 4px;
+    margin-top: 5px;
+    color: purple;
+}
+
+.comment-grid {
+    display: flex;
+    flex-direction: column;
+    margin-left: 5px;
+    width: 430px;
+}
+
+.user-info {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 3px;
+}
+
+.avatar {
+    width: 29px;
+    height: 29px;
+    border-radius: 5px;
+    margin-top: 2px;
+    margin-right: 5px;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.nickname {
+    color: rgb(67, 86, 145);
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.comment-time {
+    font-size: 12px;
+    color: #777;
+}
+
+.comment-text {
+    margin-left: 35px;
+    display: flex;
+}
+
+.comment-refer-text {
+    color: rgb(67, 86, 145);
+    font-weight: bold;
 }
