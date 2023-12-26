@@ -996,6 +996,27 @@ def to_json(snsList: list):
         )
     return jsonList
 
+def copy_file(src: str, dst: str):
+    if os.path.exists(dst):
+        os.system(f'xcopy "{src}" "{dst}" /Y/Q')
+    else:
+        os.system(f'echo f | xcopy "{src}" "{dst}" /Q')
+
+
+class snsExportToHTML:
+    def __init__(self, snss: list):
+        self.snss = snss
+
+    def to_html(self):
+        os.makedirs("./result/files", exist_ok=True)
+        copy_file("./resources/content.js", "./result/files/content.js")
+        copy_file("./resources/main.css", "./result/files/main.css")
+        with open("template.html", "r", encoding="utf-8") as f:
+            htmlhead, htmlend = f.read().split("/* 分割线 */")
+        f = open("./result/index.html", "w", encoding="utf-8")
+        output_str = ""
+        
+        
 
 if __name__ == "__main__":
     # os.system('''adb shell "su -c 'cp /data/data/com.tencent.mm/MicroMsg/867cc0443b3e8056c45b5e70aaa36197/SnsMicroMsg.db /sdcard/文件/SnsMicroMsg.db'" && adb pull /sdcard/文件/SnsMicroMsg.db SnsMicroMsg.db''')
@@ -1015,3 +1036,4 @@ if __name__ == "__main__":
         indent=4,
         ensure_ascii=False,
     )
+    
