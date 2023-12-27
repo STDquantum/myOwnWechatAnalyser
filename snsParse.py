@@ -703,7 +703,9 @@ class Feed(Column):
         self.location_type = LOCATION_TYPE_GPS  # 地址类型[INT]，LOCATION_TYPE
 
         self.likes = []
+        self.likes: list[FeedLike]
         self.comments = []
+        self.comments: list[FeedComment]
 
     def get_values(self):
         return (
@@ -912,7 +914,7 @@ class ImageDownload:
         custom_path = os.path.join(image_root, md5_hash + ".jpg")
         if os.path.exists(custom_path):
             os.utime(custom_path, (timestamp, timestamp))
-            custom_path = "./image/" + os.path.basename(custom_path)
+            custom_path = "./images/" + os.path.basename(custom_path)
             print(custom_path)
             return custom_path
         res = requests.get(imageUrl)
@@ -929,7 +931,7 @@ class ImageDownload:
         print(custom_path)
         return custom_path
 
-    def downloadImages(self, snss: SnsParse):
+    def downloadImages(self, snss: list[Feed]):
         os.makedirs(".\\result\\images", exist_ok=True)
         for sns in snss:
             if sns.sender_id != sns.account_id:
@@ -939,6 +941,40 @@ class ImageDownload:
                 sns.custom_image_path.append(self.downloadImage(image, sns.timestamp))
 
             sns.custom_link_image = self.downloadImage(sns.link_image, sns.timestamp)
+
+
+class AvatarDownload:
+    def __init__(self) -> None:
+        os.makedirs(".\\result\\avatar", exist_ok=True)
+        self.conn = sqlite3.connect("Misc.db")
+        self.c = self.conn.cursor()
+
+    def __del__(self):
+        self.conn.close()
+
+    def getAvatarFromDatabase(self, wxid: str):
+        if not wxid or wxid == "":
+            return
+        avatar_path = f".\\result\\avatar\\{wxid}"
+        if not os.path.exists(avatar_path):
+            try:
+                res = self.c.execute(
+                    f"select smallHeadBuf from ContactHeadImg1 where usrName='{wxid}'"
+                ).fetchone()
+                imgBytes = res[0]
+                open(avatar_path, "wb").write(imgBytes)
+                print("头像保存成功:", wxid)
+            except:
+                print("头像出了点小问题:", wxid)
+
+    def downloadAvatars(self, snss: list[Feed]):
+        for sns in snss:
+            self.getAvatarFromDatabase(sns.sender_id)
+            for like in sns.likes:
+                self.getAvatarFromDatabase(like.sender_id)
+            for comment in sns.comments:
+                self.getAvatarFromDatabase(comment.sender_id)
+                self.getAvatarFromDatabase(comment.ref_user_id)
 
 
 def to_json(snsList: list):
@@ -1010,7 +1046,7 @@ def copy_file(src: str, dst: str):
 
 def escape_js_and_html(input_str: str):
     if not input_str:
-        return ''
+        return ""
     # 转义HTML特殊字符
     html_escaped = html.escape(input_str, quote=False)
 
@@ -1036,40 +1072,38 @@ class snsExportToHTML:
         sender_remark = escape_js_and_html(sns.sender_remark)
         likes_str = "["
         for like in sns.likes:
-            like: FeedLike
             like_sender_remark = escape_js_and_html(like.sender_remark)
             likes_str += f"{{sender_id:'{like.sender_id}',sender_remark:'{like_sender_remark}',timestamp: {like.timestamp}}},"
         likes_str += "]"
         comments_str = "["
         for comment in sns.comments:
-            comment: FeedComment
             comment_content = escape_js_and_html(comment.content)
             comment_sender_remark = escape_js_and_html(comment.sender_remark)
             comment_ref_user_id = comment.ref_user_id if comment.ref_user_id else ""
             comment_ref_user_name = escape_js_and_html(comment.ref_user_name)
             comments_str += f"{{content:'{comment_content}',sender_id:'{comment.sender_id}',sender_remark:'{comment_sender_remark}',ref_user_id:'{comment_ref_user_id}',ref_user_name:'{comment_ref_user_name}',timestamp: {comment.timestamp}}},"
         comments_str += "]"
-        return f"""{{type:{sns.type},sns_id:{sns.sns_id},sender_id:'{sns.sender_id}',sender_remark:'{sender_remark}',content:'{content}',custom_image_path:{sns.custom_image_path},likes:{likes_str},comments:{comments_str},}},"""
+        location_str = f"{{location_address:'{escape_js_and_html(sns.location_address)}',location_latitude:{sns.location_latitude},location_longitude:{sns.location_longitude},}}"
+        return f"""{{type:{sns.type},sns_id:{sns.sns_id},sender_id:'{sns.sender_id}',sender_remark:'{sender_remark}',content:'{content}',custom_image_path:{sns.custom_image_path},likes:{likes_str},comments:{comments_str},location:{location_str},}},"""
 
     def type_2_text_only(self, sns: Feed):
         content = escape_js_and_html(sns.content)
         sender_remark = escape_js_and_html(sns.sender_remark)
         likes_str = "["
         for like in sns.likes:
-            like: FeedLike
             like_sender_remark = escape_js_and_html(like.sender_remark)
             likes_str += f"{{sender_id:'{like.sender_id}',sender_remark:'{like_sender_remark}',timestamp: {like.timestamp}}},"
         likes_str += "]"
         comments_str = "["
         for comment in sns.comments:
-            comment: FeedComment
             comment_content = escape_js_and_html(comment.content)
             comment_sender_remark = escape_js_and_html(comment.sender_remark)
             comment_ref_user_id = comment.ref_user_id if comment.ref_user_id else ""
             comment_ref_user_name = escape_js_and_html(comment.ref_user_name)
             comments_str += f"{{content:'{comment_content}',sender_id:'{comment.sender_id}',sender_remark:'{comment_sender_remark}',ref_user_id:'{comment_ref_user_id}',ref_user_name:'{comment_ref_user_name}',timestamp:{comment.timestamp}}},"
         comments_str += "]"
-        return f"""{{type:{sns.type},sns_id:{sns.sns_id},sender_id:'{sns.sender_id}',sender_remark:'{sender_remark}',content:'{content}',likes:{likes_str},comments:{comments_str},}},"""
+        location_str = f"{{location_address:'{escape_js_and_html(sns.location_address)}',location_latitude:{sns.location_latitude},location_longitude:{sns.location_longitude},}}"
+        return f"""{{type:{sns.type},sns_id:{sns.sns_id},sender_id:'{sns.sender_id}',sender_remark:'{sender_remark}',content:'{content}',likes:{likes_str},comments:{comments_str},location:{location_str},}},"""
 
     def to_html(self):
         os.makedirs(".\\result\\files", exist_ok=True)
@@ -1078,7 +1112,7 @@ class snsExportToHTML:
         with open("template.html", "r", encoding="utf-8") as f:
             htmlhead, htmlend = f.read().split("/* 分割线 */")
         f = open(".\\result\\index.html", "w", encoding="utf-8")
-        output_str = htmlhead
+        output_str = htmlhead.replace("这里是标题", f"{self.snss[0].account_remark}的朋友圈")
         for sns in self.snss:
             if sns.account_id != sns.sender_id:
                 continue
@@ -1098,6 +1132,7 @@ if __name__ == "__main__":
     Account = ["wxid_05rvkbftizq822", "wxid_8cm21ui550e729"][xiao]
     snsList = db._parse_wc_db(["SnsMicroMsg.db", "SnsMicroMsg(1).db"][xiao])
     ImageDownload().downloadImages(snsList)
+    AvatarDownload().downloadAvatars(snsList)
     snsExportToHTML(snsList).to_html()
     jsonList = to_json(snsList)
     json.dump(

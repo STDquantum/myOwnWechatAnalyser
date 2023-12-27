@@ -1,25 +1,22 @@
-const snsContainer = document.getElementById('items');
-
-const itemsPerPage = 100; // 每页显示的元素个数
+const itemsPerPage = 10; // 每页显示的元素个数
 let currentPage = 1; // 当前页
 var reachedBottom = false; // 到达底部的标记
 var lastScrollTop = 0;
 
 function renderPage(page) {
-    const container = document.getElementById('items');
+    const snsContainer = document.getElementsByClassName('items')[0];
     if (!reachedBottom) {
-        container.innerHTML = ''; // 清空容器
+        snsContainer.innerHTML = ''; // 清空容器
         lastScrollTop = 0;
     } else {
         reachedBottom = false;
     }
-    
+
     // 计算当前页应该显示的元素范围
     const startIndex = (page - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    
-    function replaceEmoji(text) {
 
+    function replaceEmoji(text) {
         // 定义替换规则，可以根据需要添加更多规则
         var replacementRules = [
             { pattern: /\[微笑\]/g, replacement: '<img src="https://res.wx.qq.com/t/wx_fed/we-emoji/res/v1.2.8/assets/Expression/Expression_1@2x.png" id="微笑" class="emoji_img">' },
@@ -133,7 +130,7 @@ function renderPage(page) {
             { pattern: /\[发抖\]/g, replacement: '<img src="https://res.wx.qq.com/t/wx_fed/we-emoji/res/v1.2.8/assets/Expression/Expression_94@2x.png" id="发抖" class="emoji_img">' },
             { pattern: /\[转圈\]/g, replacement: '<img src="https://res.wx.qq.com/t/wx_fed/we-emoji/res/v1.2.8/assets/Expression/Expression_96@2x.png" id="转圈" class="emoji_img">' }
         ];
-        
+
         // 循环遍历替换规则
         for (var i = 0; i < replacementRules.length; i++) {
             var rule = replacementRules[i];
@@ -141,188 +138,142 @@ function renderPage(page) {
         }
         return text;
     }
-    
+
+    function timestampToTime(timestamp) {
+        let date = new Date(timestamp * 1000);
+        let year = date.getFullYear() + '-';
+        let month = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '-';
+        let day = (date.getDate() < 10 ? '0' + date.getDate() : date.getDate()) + ' ';
+        let hour = (date.getHours() < 10 ? '0' + date.getHours() : date.getHours()) + ':';
+        let minute = (date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()) + ':';
+        let second = date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds();
+        return year + month + day + hour + minute + second;
+    }
     // 生成各类标签的函数
-    function messageBubble(message, side) {
-        const messageBubbleTag = document.createElement('div');
-        messageBubbleTag.className = `bubble bubble-${side}`;
-        messageBubbleTag.innerHTML = replaceEmoji(message.text);
-        return messageBubbleTag;
-    }
-    function displayNameBox(message) {
-        const displayName = document.createElement('div');
-        displayName.className = "displayname";
-        displayName.innerHTML = message.displayname;
-        return displayName;
-    }
-    function avatarBox(message) {
+    function avatarBox(sns) {
         const avatarTag = document.createElement('div');
-        avatarTag.className = "avatar";
-        avatarTag.innerHTML = `<img src="${message.avatar_path}" />`
+        avatarTag.className = "avatar-box";
+        avatarTag.innerHTML = `<img src="./avatar/${sns.sender_id}" />`
         return avatarTag;
     }
-    function messageImgBox(message) {
-        const messageImgTag = document.createElement('div');
-        messageImgTag.className = `chat-image`;
-        messageImgTag.innerHTML = `<img src="${message.text}" onclick="showModal(this)"/>`;
-        return messageImgTag;
+    function senderName(sns) {
+        const sender_name = document.createElement('div');
+        sender_name.className = "sender_name";
+        sender_name.innerHTML = sns.sender_remark;
+        return sender_name;
     }
-    function messageVideoBox(message) {
-        const messageVideoTag = document.createElement('div');
-        messageVideoTag.className = `chat-video`;
-        messageVideoTag.innerHTML = `<video src="${message.text}" controls />`;
-        return messageVideoTag;
+    function snsContent(sns) {
+        const sns_content = document.createElement('div');
+        sns_content.className = `sns-content`;
+        sns_content.innerHTML = replaceEmoji(sns.content);
+        return sns_content;
     }
-    function messageElementReferText(message, side) {
-        const messageElementRefer = document.createElement('div');
-        messageElementRefer.className = `chat-refer chat-refer-${side}`;
-        messageElementRefer.innerHTML = replaceEmoji(message.refer_text);
-        return messageElementRefer;
-    }
-    function messageVoiceToTextBubble(message, side) {
-        const messageVoiceToTextTag = document.createElement('div');
-        messageVoiceToTextTag.className = `bubble bubble-${side}`;
-        messageVoiceToTextTag.innerHTML = message.voice_to_text;
-        return messageVoiceToTextTag;
-    }
-    function messageAudioBox(message) {
-        const messageAudioTag = document.createElement('div');
-        messageAudioTag.className = `chat-audio`;
-        messageAudioTag.innerHTML = `<audio src="${message.text}" controls></audio>`;
-        return messageAudioTag;
-    }
-    function messageFileBox(message) {
-        const messageFileTag = document.createElement('div');
-        messageFileTag.className = `chat-file`;
-        if (message.link !== '') {
-            messageFileTag.innerHTML = `
-                <a href="${message.link}" target="_blank"><span>${message.file_name}</span><img src="${message.text}"/></a>`
+    function snsImgs(sns) {
+        if (sns.custom_image_path.length == 1) {
+            return snsImgsOnePic(sns);
         } else {
-            messageFileTag.innerHTML = `<div><span>文件已丢失</span><img src="${message.text}"/></div>`;
+            return snsImgsMoreThanOnePics(sns);
         }
-        return messageFileTag;
     }
-    
-    // 从数据列表中取出对应范围的元素并添加到容器中
-    for (let i = startIndex; i < endIndex && i < chatMessages.length; i++) {
-        const message = chatMessages[i];
-        if (i == startIndex) { // 判断一下在页面顶部多加一个时间
-            if (!/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(message.text)) {
-                // 时间戳转成时间
-                function timestampToTime(timestamp) {
-                    let date = new Date(timestamp * 1000);
-                    let year = date.getFullYear() + '-';
-                    let month = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '-';
-                    let day = (date.getDate() < 10 ? '0' + date.getDate() : date.getDate()) + ' ';
-                    let hour = (date.getHours() < 10 ? '0' + date.getHours() : date.getHours()) + ':';
-                    let minute = (date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()) + ':';
-                    let second = date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds();
-                    return year + month + day + hour + minute + second;
-                }
+    function snsImgsOnePic(sns) {
+        const sns_imgs_one_pic = document.createElement('div');
+        sns_imgs_one_pic.className = `sns-imgs one-pic`;
+        const img_container_one_pic = document.createElement('div');
+        img_container_one_pic.className = 'img-container one-pic'
+        img_container_one_pic.innerHTML = `<img src="${sns.custom_image_path[0]}" />`
+        sns_imgs_one_pic.appendChild(img_container_one_pic);
+        return sns_imgs_one_pic;
+    }
+    function snsImgsMoreThanOnePics(sns) {
+        const sns_imgs_more_than_one_pics = document.createElement('div');
+        sns_imgs_more_than_one_pics.className = `sns-imgs more-than-one-pics`;
+        for (const img_path of sns.custom_image_path) {
+            const img_container_one_pic = document.createElement('div');
+            img_container_one_pic.className = 'img-container more-than-one-pics'
+            img_container_one_pic.innerHTML = `<img src="${img_path}" />`
+            sns_imgs_more_than_one_pics.appendChild(img_container_one_pic);
+        }
+        return sns_imgs_more_than_one_pics;
+    }
+    function snsLocation(sns) {
+        const location = document.createElement('div');
+        if (sns.location.location_address != "") {
+            location.className = "location";
+            location.innerHTML = sns.location.location_address;
+        }
+        return location;
+    }
+    function snsTime(sns) {
+        const time = document.createElement('div');
+        time.className = `time`;
+        time.innerHTML = timestampToTime(sns.timestamp);
+        return time;
+    }
+    function likesBox(sns) {
+        const likes_box = document.createElement('div');
+        likes_box.className = 'likes-box';
+        const like_icon = document.createElement('div');
+        like_icon.className = "like-icon";
+        like_icon.innerHTML = "❤";
+        likes_box.appendChild(like_icon);
+        likes_box.appendChild(likeGrid(sns));
+        return likes_box;
+    }
+    function likeGrid(sns) {
+        const like_grid = document.createElement('div');
+        like_grid.className = 'like-grid';
+        for (const sns_like of sns.likes) {
+            const like_container = document.createElement('div');
+            like_container.className = 'like-container';
 
-                // 添加div
-                const newTimeMessage = document.createElement('div');
-                newTimeMessage.className = "item item-center";
-                newTimeMessage.innerHTML = `<span>${timestampToTime(message.timestamp)}</span>`;
-                snsContainer.appendChild(newTimeMessage);
-                console.log("增加时间元素", timestampToTime(message.timestamp));
-            }
+            const like = document.createElement('div');
+            like.className = 'like';
+            like.onmouseover = "showTooltip(this)";
+            like.onmouseout = "hideTooltip(this)";
+            like.innerHTML = `<img src="./avatar/${sns_like.sender_id}" />`
+
+            const tooltip = document.createElement('div');
+            tooltip.className = 'tooltip';
+            tooltip.innerHTML = sns_like.sender_remark;
+
+            like_container.appendChild(like);
+            like_container.appendChild(tooltip);
+
+            like_grid.appendChild(like_container)
         }
-        const messageElement = document.createElement('div'); // 下面那俩的合体
-        const avatarTag = avatarBox(message); // 头像
-        const messageContent = document.createElement('div'); // 除了avatar之外的所有
-        const side = message.is_send ? "right" : "left";
-        if (message.type == 1) {
-            // displayname 和 bubble
-            messageContent.className = `content-wrapper content-wrapper-${side}`;
-            if (message.is_chatroom && !message.is_send) {
-                messageContent.appendChild(displayNameBox(message));
-            }
-            messageContent.appendChild(messageBubble(message, side));
-            
-            // 整合
-            messageElement.className = `item item-${side}`;
-            messageElement.appendChild(message.is_send ? messageContent : avatarTag);
-            messageElement.appendChild(message.is_send ? avatarTag : messageContent);
+        return like_grid;
+    }
+    function snsFileBox(sns) {
+        const snsFileTag = document.createElement('div');
+        snsFileTag.className = `chat-file`;
+        if (sns.link !== '') {
+            snsFileTag.innerHTML = `
+                <a href="${sns.link}" target="_blank"><span>${sns.file_name}</span><img src="${sns.text}"/></a>`
+        } else {
+            snsFileTag.innerHTML = `<div><span>文件已丢失</span><img src="${sns.text}"/></div>`;
         }
-        else if (message.type == 0) {
-            messageElement.className = "item item-center";
-            messageElement.innerHTML = `<span>${message.text}</span>`;
+        return snsFileTag;
+    }
+
+    // 从数据列表中取出对应范围的元素并添加到容器中
+    for (let i = startIndex; i < endIndex && i < snsMessages.length; i++) {
+        const sns = snsMessages[i];
+        const snsItem = document.createElement('div'); // 下面那俩的合体
+        const snsAvatarBox = avatarBox(sns); // 头像
+        const snsItemBox = document.createElement('div'); // 除了avatar之外的所有
+        snsItemBox.className = "sns-item-box";
+        if (sns.type == 1) {
+            snsItemBox.appendChild(senderName(sns));
+            snsItemBox.appendChild(snsContent(sns));
+            snsItemBox.appendChild(snsImgs(sns));
+            snsItemBox.appendChild(snsLocation(sns));
+            snsItemBox.appendChild(snsTime(sns));
+            snsItemBox.appendChild(likesBox(sns));
         }
-        else if (message.type == 3) {
-            // displayname 和 img
-            messageContent.className = `content-wrapper content-wrapper-${side}`;
-            if (message.is_chatroom && !message.is_send) {
-                messageContent.appendChild(displayNameBox(message));
-            }
-            messageContent.appendChild(messageImgBox(message));
-            
-            // 整合
-            messageElement.className = `item item-${side}`;
-            messageElement.appendChild(message.is_send ? messageContent : avatarTag);
-            messageElement.appendChild(message.is_send ? avatarTag : messageContent);
-        }
-        else if (message.type == 43) {
-            // displayname 和 video
-            messageContent.className = `content-wrapper content-wrapper-${side}`;
-            if (message.is_chatroom && !message.is_send) {
-                messageContent.appendChild(displayNameBox(message));
-            }
-            messageContent.appendChild(messageVideoBox(message));
-            
-            // 整合
-            messageElement.className = `item item-${side}`;
-            messageElement.appendChild(message.is_send ? messageContent : avatarTag);
-            messageElement.appendChild(message.is_send ? avatarTag : messageContent);
-        }
-        else if (message.type == 49) {
-            if (message.sub_type == 57) {
-                // displayname 和 bubble 和 refer
-                messageContent.className = `content-wrapper content-wrapper-${side}`;
-                if (message.is_chatroom && !message.is_send) {
-                    messageContent.appendChild(displayNameBox(message));
-                }
-                messageContent.appendChild(messageBubble(message, side));
-                if (message.refer_text) {
-                    messageContent.appendChild(messageElementReferText(message, side));
-                }
-                
-                // 整合
-                messageElement.className = `item item-${side}`;
-                messageElement.appendChild(message.is_send ? messageContent : avatarTag);
-                messageElement.appendChild(message.is_send ? avatarTag : messageContent);
-            }
-            if (message.sub_type == 6) {
-                // displayname 和 file
-                messageContent.className = `content-wrapper content-wrapper-${side}`;
-                if (message.is_chatroom && !message.is_send) {
-                    messageContent.appendChild(displayNameBox(message));
-                }
-                messageContent.appendChild(messageFileBox(message));
-                
-                // 整合
-                messageElement.className = `item item-${side}`;
-                messageElement.appendChild(message.is_send ? messageContent : avatarTag);
-                messageElement.appendChild(message.is_send ? avatarTag : messageContent);
-            }
-        }
-        else if (message.type == 34) {
-            // displayname 和 转的文字 和 audio
-            messageContent.className = `content-wrapper content-wrapper-${side}`;
-            if (message.is_chatroom && !message.is_send) {
-                messageContent.appendChild(displayNameBox(message));
-            }
-            if (message.voice_to_text) {
-                messageContent.appendChild(messageVoiceToTextBubble(message, side));
-            }
-            messageContent.appendChild(messageAudioBox(message));
-            
-            // 整合
-            messageElement.className = `item item-${side}`;
-            messageElement.appendChild(message.is_send ? messageContent : avatarTag);
-            messageElement.appendChild(message.is_send ? avatarTag : messageContent);
-        }
-        snsContainer.appendChild(messageElement);
+        snsItem.className = "item";
+        snsItem.appendChild(snsAvatarBox);
+        snsItem.appendChild(snsItemBox);
+        snsContainer.appendChild(snsItem);
     }
     document.querySelector("#items").scrollTop = lastScrollTop;
     updatePaginationInfo();
@@ -337,22 +288,22 @@ function prevPage() {
 }
 
 function nextPage() {
-    const totalPages = Math.ceil(chatMessages.length / itemsPerPage);
+    const totalPages = Math.ceil(snsMessages.length / itemsPerPage);
     if (currentPage < totalPages) {
         currentPage++;
         renderPage(currentPage);
     }
 }
 function updatePaginationInfo() {
-    const totalPages = Math.ceil(chatMessages.length / itemsPerPage);
+    const totalPages = Math.ceil(snsMessages.length / itemsPerPage);
     const paginationInfo = document.getElementById('paginationInfo');
     paginationInfo.textContent = `共 ${totalPages} 页，当前第 ${currentPage} 页`;
 }
 function gotoPage() {
-    const totalPages = Math.ceil(chatMessages.length / itemsPerPage);
+    const totalPages = Math.ceil(snsMessages.length / itemsPerPage);
     const inputElement = document.getElementById('gotoPageInput');
     const targetPage = parseInt(inputElement.value);
-    
+
     if (targetPage >= 1 && targetPage <= totalPages) {
         currentPage = targetPage;
         renderPage(currentPage);
@@ -363,8 +314,8 @@ function gotoPage() {
 
 
 function checkScroll() {
-    var snsContainer = document.getElementById("items");
-    
+    var snsContainer = document.getElementsByClassName("items");
+
     // 检查滚动条是否滑到底部
     if (snsContainer.scrollHeight - snsContainer.scrollTop - 10 <= snsContainer.clientHeight) {
         // 如果滚动条在底部
@@ -384,7 +335,7 @@ renderPage(currentPage);
 function refreshMediaListener() {
     const audioTags = document.querySelectorAll('audio');
     const videoTags = document.querySelectorAll('video');
-    
+
     audioTags.forEach(audio => {
         audio.addEventListener('play', function () {
             pauseOtherMedia(audio);
@@ -414,25 +365,3 @@ function refreshMediaListener() {
 
 refreshMediaListener();
 
-function showModal(image) {
-    var modal = document.getElementById("modal");
-    var modalImage = document.getElementById("modal-image");
-    modal.style.display = "block";
-    modalImage.src = image.src;
-    console.log(image.src);
-}
-
-function hideModal() {
-    var modal = document.getElementById("modal");
-    modal.style.display = "none";
-}
-
-function showTooltip(element) {
-    var tooltip = element.nextElementSibling;
-    tooltip.style.display = 'block';
-}
-
-function hideTooltip(element) {
-    var tooltip = element.nextElementSibling;
-    tooltip.style.display = 'none';
-}

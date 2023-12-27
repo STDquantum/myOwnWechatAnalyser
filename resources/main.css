@@ -86,6 +86,13 @@ img {
     word-break: break-all;
 }
 
+.emoji_img {
+    width: 22px;
+    height: 22px;
+    vertical-align: middle;
+    margin-top: -4.4px;
+}
+
 .sns-imgs {
     margin-top: 5px;
 }

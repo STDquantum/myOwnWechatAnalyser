@@ -3,8 +3,32 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>这里是标题</title>
         <link rel="stylesheet" href="./files/main.css">
-        <script type="text/javascript" src="./files/content.js"></script>
+        <script type="text/javascript">
+            function showModal(image) {
+                var modal = document.getElementById("modal");
+                var modalImage = document.getElementById("modal-image");
+                modal.style.display = "block";
+                modalImage.src = image.src;
+                console.log(image.src);
+            }
+
+            function hideModal() {
+                var modal = document.getElementById("modal");
+                modal.style.display = "none";
+            }
+
+            function showTooltip(element) {
+                var tooltip = element.nextElementSibling;
+                tooltip.style.display = 'block';
+            }
+
+            function hideTooltip(element) {
+                var tooltip = element.nextElementSibling;
+                tooltip.style.display = 'none';
+            }
+        </script>
     </head>
     <body>
         <div class="sns">
@@ -30,11 +54,11 @@
                         </div>
                         <div class="sns-content">
                             寒冷的冬日，日你妈。nusqnuisqiunqunsqsuiquiqnsuqnuqqnsqnuisnqiuniqunuiqniusnquinsiqunsiqunsuiqnsuiqnsuiqnsqniqnsiqnsuiqnsuqniusqisnqinsqinsqinsqusuqinsqiunsiqnsiqnsuqnsuqnsiqunsuiqnsiqusqnqsunqunsu
-
-
-
-
-
+                            
+                            
+                            
+                            
+                            
                             ssjisjisjijsijsijisjisjijsijis
                         </div>
                         <div class="sns-imgs more-than-one-pics">
@@ -234,5 +258,6 @@
                 /* 分割线 */
             ];
         </script>
+        <script type="text/javascript" src="./files/content.js"></script>
     </body>
 </html>
