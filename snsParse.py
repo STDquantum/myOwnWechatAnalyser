@@ -5,6 +5,7 @@ import requests
 import os
 import hashlib
 import time
+import html
 
 # 朋友圈类型
 MOMENT_TYPE_IMAGE = 1  # 正常文字图片
@@ -763,6 +764,10 @@ class Feed(Column):
                 contact_map[comment.sender_id]["conRemark"]
                 or contact_map[comment.sender_id]["nickname"]
             )
+            comment.ref_user_name = comment.ref_user_id and (
+                contact_map[comment.ref_user_id]["conRemark"]
+                or contact_map[comment.ref_user_id]["nickname"]
+            )
 
 
 class FeedLike(Column):
@@ -900,7 +905,6 @@ class ImageDownload:
     def downloadImage(self, imageUrl: str | None, timestamp: int):
         if imageUrl is None or imageUrl == "":
             return None
-        print(imageUrl)
         md5 = hashlib.md5()
         md5.update(imageUrl.encode("utf-8"))
         md5_hash = md5.hexdigest()
@@ -996,6 +1000,7 @@ def to_json(snsList: list):
         )
     return jsonList
 
+
 def copy_file(src: str, dst: str):
     if os.path.exists(dst):
         os.system(f'xcopy "{src}" "{dst}" /Y/Q')
@@ -1003,20 +1008,88 @@ def copy_file(src: str, dst: str):
         os.system(f'echo f | xcopy "{src}" "{dst}" /Q')
 
 
+def escape_js_and_html(input_str: str):
+    if not input_str:
+        return ''
+    # 转义HTML特殊字符
+    html_escaped = html.escape(input_str, quote=False)
+
+    # 手动处理JavaScript转义字符
+    js_escaped = (
+        html_escaped.replace("\\", "\\\\")
+        .replace("'", r"\'")
+        .replace('"', r"\"")
+        .replace("\n", r"\n")
+        .replace("\r", r"\r")
+        .replace("\t", r"\t")
+    )
+
+    return js_escaped
+
+
 class snsExportToHTML:
-    def __init__(self, snss: list):
+    def __init__(self, snss: list[Feed]):
         self.snss = snss
 
+    def type_1_text_and_image(self, sns: Feed):
+        content = escape_js_and_html(sns.content)
+        sender_remark = escape_js_and_html(sns.sender_remark)
+        likes_str = "["
+        for like in sns.likes:
+            like: FeedLike
+            like_sender_remark = escape_js_and_html(like.sender_remark)
+            likes_str += f"{{sender_id:'{like.sender_id}',sender_remark:'{like_sender_remark}',timestamp: {like.timestamp}}},"
+        likes_str += "]"
+        comments_str = "["
+        for comment in sns.comments:
+            comment: FeedComment
+            comment_content = escape_js_and_html(comment.content)
+            comment_sender_remark = escape_js_and_html(comment.sender_remark)
+            comment_ref_user_id = comment.ref_user_id if comment.ref_user_id else ""
+            comment_ref_user_name = escape_js_and_html(comment.ref_user_name)
+            comments_str += f"{{content:'{comment_content}',sender_id:'{comment.sender_id}',sender_remark:'{comment_sender_remark}',ref_user_id:'{comment_ref_user_id}',ref_user_name:'{comment_ref_user_name}',timestamp: {comment.timestamp}}},"
+        comments_str += "]"
+        return f"""{{type:{sns.type},sns_id:{sns.sns_id},sender_id:'{sns.sender_id}',sender_remark:'{sender_remark}',content:'{content}',custom_image_path:{sns.custom_image_path},likes:{likes_str},comments:{comments_str},}},"""
+
+    def type_2_text_only(self, sns: Feed):
+        content = escape_js_and_html(sns.content)
+        sender_remark = escape_js_and_html(sns.sender_remark)
+        likes_str = "["
+        for like in sns.likes:
+            like: FeedLike
+            like_sender_remark = escape_js_and_html(like.sender_remark)
+            likes_str += f"{{sender_id:'{like.sender_id}',sender_remark:'{like_sender_remark}',timestamp: {like.timestamp}}},"
+        likes_str += "]"
+        comments_str = "["
+        for comment in sns.comments:
+            comment: FeedComment
+            comment_content = escape_js_and_html(comment.content)
+            comment_sender_remark = escape_js_and_html(comment.sender_remark)
+            comment_ref_user_id = comment.ref_user_id if comment.ref_user_id else ""
+            comment_ref_user_name = escape_js_and_html(comment.ref_user_name)
+            comments_str += f"{{content:'{comment_content}',sender_id:'{comment.sender_id}',sender_remark:'{comment_sender_remark}',ref_user_id:'{comment_ref_user_id}',ref_user_name:'{comment_ref_user_name}',timestamp:{comment.timestamp}}},"
+        comments_str += "]"
+        return f"""{{type:{sns.type},sns_id:{sns.sns_id},sender_id:'{sns.sender_id}',sender_remark:'{sender_remark}',content:'{content}',likes:{likes_str},comments:{comments_str},}},"""
+
     def to_html(self):
-        os.makedirs("./result/files", exist_ok=True)
-        copy_file("./resources/content.js", "./result/files/content.js")
-        copy_file("./resources/main.css", "./result/files/main.css")
+        os.makedirs(".\\result\\files", exist_ok=True)
+        copy_file(".\\resources\\content.js", ".\\result\\files\\content.js")
+        copy_file(".\\resources\\main.css", ".\\result\\files\\main.css")
         with open("template.html", "r", encoding="utf-8") as f:
             htmlhead, htmlend = f.read().split("/* 分割线 */")
-        f = open("./result/index.html", "w", encoding="utf-8")
-        output_str = ""
-        
-        
+        f = open(".\\result\\index.html", "w", encoding="utf-8")
+        output_str = htmlhead
+        for sns in self.snss:
+            if sns.account_id != sns.sender_id:
+                continue
+            if sns.type == MOMENT_TYPE_IMAGE:
+                output_str += self.type_1_text_and_image(sns)
+            elif sns.type == MOMENT_TYPE_TEXT_ONLY:
+                output_str += self.type_2_text_only(sns)
+        output_str += htmlend
+        f.write(output_str)
+        f.close()
+
 
 if __name__ == "__main__":
     # os.system('''adb shell "su -c 'cp /data/data/com.tencent.mm/MicroMsg/867cc0443b3e8056c45b5e70aaa36197/SnsMicroMsg.db /sdcard/文件/SnsMicroMsg.db'" && adb pull /sdcard/文件/SnsMicroMsg.db SnsMicroMsg.db''')
@@ -1025,6 +1098,7 @@ if __name__ == "__main__":
     Account = ["wxid_05rvkbftizq822", "wxid_8cm21ui550e729"][xiao]
     snsList = db._parse_wc_db(["SnsMicroMsg.db", "SnsMicroMsg(1).db"][xiao])
     ImageDownload().downloadImages(snsList)
+    snsExportToHTML(snsList).to_html()
     jsonList = to_json(snsList)
     json.dump(
         jsonList,
@@ -1036,4 +1110,3 @@ if __name__ == "__main__":
         indent=4,
         ensure_ascii=False,
     )
-    
