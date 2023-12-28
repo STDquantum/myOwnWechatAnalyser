@@ -1067,6 +1067,38 @@ class snsExportToHTML:
     def __init__(self, snss: list[Feed]):
         self.snss = snss
 
+    def getSnsOwnerAvatar(self, wxid: str):
+        if not wxid or wxid == "":
+            return ""
+        avatar_path = f".\\result\\files\\ownerAvatar"
+        try:
+            conn = sqlite3.connect("Misc.db")
+            c = conn.cursor()
+            imgBytes = c.execute(
+                f"select smallHeadBuf from ContactHeadImg1 where usrName=?", [wxid]
+            ).fetchone()[0]
+            open(avatar_path, "wb").write(imgBytes)
+            print("头像保存成功:", wxid)
+        except:
+            print("头像出了点小问题:", wxid)
+        finally:
+            conn.close()
+
+    def getSnsBackground(self, wxid: str):
+        conn = sqlite3.connect(["SnsMicroMsg.db", "SnsMicroMsg(1).db"][xiao])
+        c = conn.cursor()
+        try:
+            imgUrl = c.execute(
+                "select imageBgUrl from SnsCover where userName=?", [wxid]
+            ).fetchone()[0]
+            imgPath = ".\\result\\files\\snsBg"
+            res = requests.get(imgUrl)
+            open(imgPath, "wb").write(res.content)
+        except:
+            return ""
+        finally:
+            conn.close()
+
     def type_1_text_and_image(self, sns: Feed):
         content = escape_js_and_html(sns.content)
         sender_remark = escape_js_and_html(sns.sender_remark)
@@ -1084,7 +1116,7 @@ class snsExportToHTML:
             comments_str += f"{{content:'{comment_content}',sender_id:'{comment.sender_id}',sender_remark:'{comment_sender_remark}',ref_user_id:'{comment_ref_user_id}',ref_user_name:'{comment_ref_user_name}',timestamp: {comment.timestamp}}},"
         comments_str += "]"
         location_str = f"{{location_address:'{escape_js_and_html(sns.location_address)}',location_latitude:{sns.location_latitude},location_longitude:{sns.location_longitude},}}"
-        return f"""{{type:{sns.type},sns_id:{sns.sns_id},sender_id:'{sns.sender_id}',sender_remark:'{sender_remark}',content:'{content}',custom_image_path:{sns.custom_image_path},likes:{likes_str},comments:{comments_str},location:{location_str},}},"""
+        return f"""{{type:{sns.type},timestamp:{sns.timestamp},sns_id:{sns.sns_id},sender_id:'{sns.sender_id}',sender_remark:'{sender_remark}',content:'{content}',custom_image_path:{sns.custom_image_path},likes:{likes_str},comments:{comments_str},location:{location_str},}},"""
 
     def type_2_text_only(self, sns: Feed):
         content = escape_js_and_html(sns.content)
@@ -1103,7 +1135,7 @@ class snsExportToHTML:
             comments_str += f"{{content:'{comment_content}',sender_id:'{comment.sender_id}',sender_remark:'{comment_sender_remark}',ref_user_id:'{comment_ref_user_id}',ref_user_name:'{comment_ref_user_name}',timestamp:{comment.timestamp}}},"
         comments_str += "]"
         location_str = f"{{location_address:'{escape_js_and_html(sns.location_address)}',location_latitude:{sns.location_latitude},location_longitude:{sns.location_longitude},}}"
-        return f"""{{type:{sns.type},sns_id:{sns.sns_id},sender_id:'{sns.sender_id}',sender_remark:'{sender_remark}',content:'{content}',likes:{likes_str},comments:{comments_str},location:{location_str},}},"""
+        return f"""{{type:{sns.type},timestamp:{sns.timestamp},sns_id:{sns.sns_id},sender_id:'{sns.sender_id}',sender_remark:'{sender_remark}',content:'{content}',likes:{likes_str},comments:{comments_str},location:{location_str},}},"""
 
     def to_html(self):
         os.makedirs(".\\result\\files", exist_ok=True)
@@ -1112,7 +1144,9 @@ class snsExportToHTML:
         with open("template.html", "r", encoding="utf-8") as f:
             htmlhead, htmlend = f.read().split("/* 分割线 */")
         f = open(".\\result\\index.html", "w", encoding="utf-8")
-        output_str = htmlhead.replace("这里是标题", f"{self.snss[0].account_remark}的朋友圈")
+        output_str = htmlhead.replace("这里是标题", f"{self.snss[0].account_remark}的朋友圈").replace("这里是朋友圈ownername", self.snss[0].account_remark)
+        self.getSnsBackground(self.snss[0].account_id)
+        self.getSnsOwnerAvatar(self.snss[0].account_id)
         for sns in self.snss:
             if sns.account_id != sns.sender_id:
                 continue

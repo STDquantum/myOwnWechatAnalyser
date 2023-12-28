@@ -228,10 +228,8 @@ function renderPage(page) {
 
             const like = document.createElement('div');
             like.className = 'like';
-            like.onmouseover = "showTooltip(this)";
-            like.onmouseout = "hideTooltip(this)";
             like.innerHTML = `<img src="./avatar/${sns_like.sender_id}" />`
-
+            
             const tooltip = document.createElement('div');
             tooltip.className = 'tooltip';
             tooltip.innerHTML = sns_like.sender_remark;
@@ -275,9 +273,18 @@ function renderPage(page) {
         snsItem.appendChild(snsItemBox);
         snsContainer.appendChild(snsItem);
     }
-    document.querySelector("#items").scrollTop = lastScrollTop;
+    processLikeTooltip();
+    document.getElementsByTagName("body")[0].scrollTop = lastScrollTop;
     updatePaginationInfo();
     refreshMediaListener();
+}
+
+function processLikeTooltip() {
+    const likes = document.getElementsByClassName("like");
+    for (const like of likes) {
+        like.onmouseover = showTooltip;
+        like.onmouseout = hideTooltip;
+    }
 }
 
 function prevPage() {
@@ -295,11 +302,13 @@ function nextPage() {
     }
 }
 function updatePaginationInfo() {
+    return;
     const totalPages = Math.ceil(snsMessages.length / itemsPerPage);
     const paginationInfo = document.getElementById('paginationInfo');
     paginationInfo.textContent = `共 ${totalPages} 页，当前第 ${currentPage} 页`;
 }
 function gotoPage() {
+    return;
     const totalPages = Math.ceil(snsMessages.length / itemsPerPage);
     const inputElement = document.getElementById('gotoPageInput');
     const targetPage = parseInt(inputElement.value);
@@ -314,7 +323,7 @@ function gotoPage() {
 
 
 function checkScroll() {
-    var snsContainer = document.getElementsByClassName("items");
+    var snsContainer = document.getElementsByTagName("body")[0];
 
     // 检查滚动条是否滑到底部
     if (snsContainer.scrollHeight - snsContainer.scrollTop - 10 <= snsContainer.clientHeight) {

@@ -19,27 +19,27 @@
                 modal.style.display = "none";
             }
 
-            function showTooltip(element) {
-                var tooltip = element.nextElementSibling;
+            function showTooltip() {
+                var tooltip = this.nextElementSibling;
                 tooltip.style.display = 'block';
             }
 
-            function hideTooltip(element) {
-                var tooltip = element.nextElementSibling;
+            function hideTooltip() {
+                var tooltip = this.nextElementSibling;
                 tooltip.style.display = 'none';
             }
         </script>
     </head>
-    <body>
+    <body onscroll="checkScroll()">
         <div class="sns">
             <div class="sns-header">
                 <div class="sns-cover">
-                    <img src="file:///D:/Download/QQ%E7%A9%BA%E9%97%B4%E5%A4%87%E4%BB%BD_405720329/Messages/images/ADC7097D.jpeg">
+                    <img src="./files/snsBg">
                 </div>
                 <div class="owner">
-                    <div class="owner-name">无题</div>
+                    <div class="owner-name">这里是朋友圈ownername</div>
                     <div class="owner-avatar">
-                        <img src="file:///D:/Download/QQ%E7%A9%BA%E9%97%B4%E5%A4%87%E4%BB%BD_405720329/Common/images/405720329">
+                        <img src="./files/ownerAvatar">
                     </div>
                 </div>
             </div>
