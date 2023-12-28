@@ -207,7 +207,6 @@ body {
     width: 100%;
 }
 
-
 .comments-box {
     display: flex;
     flex-direction: row;
@@ -272,8 +271,11 @@ body {
 
 .comment-text {
     margin-left: 35px;
+    margin-right: 10px;
     display: inline-block;
     font-size: 14px;
+    word-break: break-all;
+    white-space: pre-wrap;
 }
 
 .comment-text>.emoji_img {
