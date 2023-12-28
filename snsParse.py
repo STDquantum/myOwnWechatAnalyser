@@ -1188,7 +1188,7 @@ class snsExportToHTML:
         os.makedirs(".\\result\\files", exist_ok=True)
         copy_file(".\\resources\\content.js", ".\\result\\files\\content.js")
         copy_file(".\\resources\\main.css", ".\\result\\files\\main.css")
-        with open("template.html", "r", encoding="utf-8") as f:
+        with open(".\\resources\\template.html", "r", encoding="utf-8") as f:
             htmlhead, htmlend = f.read().split("/* 分割线 */")
         f = open(".\\result\\index.html", "w", encoding="utf-8")
         output_str = htmlhead.replace("这里是标题", f"{self.snss[0].account_remark}的朋友圈").replace("这里是朋友圈ownername", self.snss[0].account_remark)

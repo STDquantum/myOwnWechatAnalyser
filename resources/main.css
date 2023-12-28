@@ -203,6 +203,7 @@ img {
     padding-left: 2px;
     margin-left: 4px;
     margin-top: 4px;
+    user-select: none;
     color: red;
 }
 
@@ -243,6 +244,7 @@ img {
     padding-left: 2px;
     margin-left: 4px;
     margin-top: 5px;
+    user-select: none;
     color: purple;
 }
 
@@ -297,7 +299,7 @@ img {
 .comment-text>.emoji_img {
     width: 18px;
     height: 18px;
-    margin-top: -1px;
+    margin-top: -3px;
 }
 
 .comment-refer-text {

@@ -131,6 +131,7 @@ function renderPage(page) {
             { pattern: /🥲/g, replacement: '<img src="https://em-content.zobj.net/source/apple/354/smiling-face-with-tear_1f972.png" id="Smiling Face with Tear" class="emoji_img">' },
             { pattern: //g, replacement: '<img src="https://em-content.zobj.net/source/apple/354/thumbs-up_1f44d.png" id="拇指向上" class="emoji_img">' },
             { pattern: /🇫🇷/g, replacement: '<img src="https://em-content.zobj.net/source/apple/354/flag-france_1f1eb-1f1f7.png" id="法国国旗" class="emoji_img">' },
+            { pattern: /🫠/g, replacement: '<img src="https://em-content.zobj.net/source/apple/354/melting-face_1fae0.png" id="Melting Face" class="emoji_img">' },
         ];
 
         // 循环遍历替换规则
@@ -205,7 +206,7 @@ function renderPage(page) {
             const latitude = sns.location.location_latitude;
             const address = sns.location.location_address;
             const addressURI = encodeURI(address);
-            location.innerHTML = `<a target="_blank" href="http://api.map.baidu.com/marker?location=${latitude},${longitude}&title=我的位置&content=${addressURI}&output=html&coord_type=wgs84&src=webapp.baidu.openAPIdemo">${address}</a>`;
+            location.innerHTML = `<a target="_blank" href="http://api.map.baidu.com/marker?location=${latitude},${longitude}&title=我的位置&content=${addressURI}&output=html&coord_type=wgs84&src=baidu.com">${address}</a>`;
         }
         return location;
     }

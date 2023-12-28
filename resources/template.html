@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>这里是标题</title>
+        <link rel="stylesheet" href="./files/main.css">
+        <script type="text/javascript">
+            function showModal(image) {
+                var modal = document.getElementById("modal");
+                var modalImage = document.getElementById("modal-image");
+                modal.style.display = "block";
+                modalImage.src = image.src;
+                console.log(image.src);
+            }
+
+            function hideModal() {
+                var modal = document.getElementById("modal");
+                modal.style.display = "none";
+            }
+
+            function showTooltip() {
+                var tooltip = this.nextElementSibling;
+                tooltip.style.display = 'block';
+            }
+
+            function hideTooltip() {
+                var tooltip = this.nextElementSibling;
+                tooltip.style.display = 'none';
+            }
+        </script>
+    </head>
+    <body>
+        <div class="sns">
+            <div class="sns-header">
+                <div class="sns-cover">
+                    <img src="./files/snsBg">
+                </div>
+                <div class="owner">
+                    <div class="owner-name">这里是朋友圈ownername</div>
+                    <div class="owner-avatar">
+                        <img src="./files/ownerAvatar">
+                    </div>
+                </div>
+            </div>
+            <div class="items">
+                <div class="item">
+                    <div class="avatar-box">
+                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAICAIAAABVpBlvAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAXSURBVBhXY/z//z8DKmCC0kiA3kIMDADFpQMNDxjDUAAAAABJRU5ErkJggg==">
+                    </div>
+                    <div class="sns-item-box">
+                        <div class="sender_name">
+                            hahahhahhahahha
+                        </div>
+                        <div class="sns-content">
+                            寒冷的冬日。nusqnuisqiunqunsqsuiquiqnsuqnuqqnsqnuisnqiuniqunuiqniusnquinsiqunsiqunsuiqnsuiqnsuiqnsqniqnsiqnsuiqnsuqniusqisnqinsqinsqinsqusuqinsqiunsiqnsiqnsuqnsuqnsiqunsuiqnsiqusqnqsunqunsu
+                            
+                            
+                            ssjisjisjijsijsijisjisjijsijis
+                        </div>
+                        <div class="sns-imgs more-than-one-pics">
+                            <div class="img-container more-than-one-pics">
+                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAICAIAAABVpBlvAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAXSURBVBhXY/z//z8DKmCC0kiA3kIMDADFpQMNDxjDUAAAAABJRU5ErkJggg==">
+                            </div>
+                            <div class="img-container more-than-one-pics">
+                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAICAIAAABVpBlvAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAXSURBVBhXY/z//z8DKmCC0kiA3kIMDADFpQMNDxjDUAAAAABJRU5ErkJggg==">
+                            </div>
+                            <div class="img-container more-than-one-pics">
+                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAICAIAAABVpBlvAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAXSURBVBhXY/z//z8DKmCC0kiA3kIMDADFpQMNDxjDUAAAAABJRU5ErkJggg==">
+                            </div>
+                            <div class="img-container more-than-one-pics">
+                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAICAIAAABVpBlvAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAXSURBVBhXY/z//z8DKmCC0kiA3kIMDADFpQMNDxjDUAAAAABJRU5ErkJggg==">
+                            </div>
+                        </div>
+                        <div class="location">
+                            杭州·哈哈哈哈哈哈哈哈哈哈
+                        </div>
+                        <div class="time">
+                            2023-12-19 23:20:19
+                        </div>
+                        <div class="likes-box">
+                            <div class="like-icon">❤</div>
+                            <div class="like-grid">
+                                <div class="like-container">
+                                    <div class="like" onmouseover="showTooltip(this)" onmouseout="hideTooltip(this)">
+                                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAICAIAAABVpBlvAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAXSURBVBhXY/z//z8DKmCC0kiA3kIMDADFpQMNDxjDUAAAAABJRU5ErkJggg==">
+                                    </div>
+                                    <div class="tooltip">hahahhahhahahha</div>
+                                </div>
+                                <div class="like-container">
+                                    <div class="like" onmouseover="showTooltip(this)" onmouseout="hideTooltip(this)">
+                                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAICAIAAABVpBlvAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAXSURBVBhXY/z//z8DKmCC0kiA3kIMDADFpQMNDxjDUAAAAABJRU5ErkJggg==">
+                                    </div>
+                                    <div class="tooltip">hahahhahhahahha</div>
+                                </div>
+                                <div class="like-container">
+                                    <div class="like" onmouseover="showTooltip(this)" onmouseout="hideTooltip(this)">
+                                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAICAIAAABVpBlvAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAXSURBVBhXY/z//z8DKmCC0kiA3kIMDADFpQMNDxjDUAAAAABJRU5ErkJggg==">
+                                    </div>
+                                    <div class="tooltip">hahahhahhahahha</div>
+                                </div>
+                                <div class="like-container">
+                                    <div class="like" onmouseover="showTooltip(this)" onmouseout="hideTooltip(this)">
+                                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAICAIAAABVpBlvAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAXSURBVBhXY/z//z8DKmCC0kiA3kIMDADFpQMNDxjDUAAAAABJRU5ErkJggg==">
+                                    </div>
+                                    <div class="tooltip">hahahhahhahahha</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="comments-box">
+                            <div class="comment-icon">✉</div>
+                            <div class="comment-grid">
+                                <div class="comment-container">
+                                    <div class="user-info">
+                                        <img class="avatar" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAICAIAAABVpBlvAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAXSURBVBhXY/z//z8DKmCC0kiA3kIMDADFpQMNDxjDUAAAAABJRU5ErkJggg==" alt="Avatar">
+                                        <div class="user-details">
+                                            <div class="nickname">阿姨啊啊</div>
+                                            <div class="comment-time">3小时前</div>
+                                        </div>
+                                    </div>
+                                    <div class="comment-text">
+                                        回复&nbsp;
+                                        <div class="comment-refer-text">oop</div>
+                                        :&nbsp;你考的那套
+                                    </div>
+                                </div>
+                                <div class="comment-container">
+                                    <div class="user-info">
+                                        <img class="avatar" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAICAIAAABVpBlvAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAXSURBVBhXY/z//z8DKmCC0kiA3kIMDADFpQMNDxjDUAAAAABJRU5ErkJggg==" alt="Avatar">
+                                        <div class="user-details">
+                                            <div class="nickname">流派试炼去</div>
+                                            <div class="comment-time">3小时前</div>
+                                        </div>
+                                    </div>
+                                    <div class="comment-text">
+                                        简单的快进到
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="modal" class="modal" onclick="hideModal()">
+            <img id="modal-image" class="modal-image">
+        </div>
+        <script type="text/javascript">
+            const snsMessages = [
+                /* 分割线 */
+            ];
+        </script>
+        <script type="text/javascript" src="./files/content.js"></script>
+    </body>
+</html>
