@@ -3,6 +3,10 @@ body {
     justify-content: center;
 }
 
+img {
+    user-select: none;
+}
+
 .sns {
     width: 450px;
     display: flex;
@@ -40,6 +44,11 @@ body {
     margin-right: 17px;
     border-radius: 6px;
     overflow: hidden;
+}
+
+.owner-avatar>img {
+    width: 100%;
+    height: 100%;
 }
 
 .owner-name {
@@ -150,11 +159,10 @@ body {
     margin-top: 4px;
     padding-top: 8px;
     margin-right: 22px;
-    padding-bottom: 8px;
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
-    border-bottom: 1px solid rgb(218, 218, 218);
-    background-color: rgb(236, 236, 236);
+    padding-bottom: 4px;
+    border-radius: 6px;
+    border-bottom: 1px solid white;
+    background-color: rgb(244, 244, 244);
 }
 
 .like-container {
@@ -164,6 +172,7 @@ body {
 
 .like {
     cursor: pointer;
+    aspect-ratio: 1;
 }
 
 .like>img {
@@ -212,13 +221,12 @@ body {
     flex-direction: row;
     margin-right: 22px;
     padding-bottom: 8px;
-    border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 6px;
-    background-color: rgb(236, 236, 236);
+    background-color: rgb(244, 244, 244);
 }
 
 .comment-container {
     margin-top: 9px;
+    margin-right: 9px;
     padding-bottom: 8px;
     border-bottom: 1px solid rgb(218, 218, 218);
 }

@@ -24,7 +24,7 @@ def processContact():
     c = conn.cursor()
     c.execute("select username, alias, conRemark, nickname, type from rcontact")
     res = c.fetchall()
-    contact = {}
+    contact = json.load(open(".\\result\\database\\contact.json", "r", encoding="utf-8"))
     for username, alias, conRemark, nickname, Type in res:
         contact[username] = {}
         contact[username]["alias"] = alias

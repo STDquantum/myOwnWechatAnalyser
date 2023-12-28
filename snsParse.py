@@ -816,17 +816,20 @@ class SnsParse:
     def __init__(self) -> None:
         pass
 
-    def _parse_wc_db(self, path="SnsMicroMsg.db"):
-        conn = sqlite3.connect(path)
-        c = conn.cursor()
-        readTable = c.execute(
-            "SELECT type, userName, content, attrBuf from SnsInfo where userName not like 'v3_%@stranger'"
-        )
+    def _parse_wc_db(self, databasePath=["SnsMicroMsg.db"]):
         snsList = []
-        for ttype, username, content, attr in readTable:
-            feed = self._parse_wc_db_with_value(ttype, username, content, attr)
-            snsList.append(feed)
-        conn.close()
+        for path in databasePath:
+            conn = sqlite3.connect(path)
+            c = conn.cursor()
+            global Account
+            Account = "wxid_05rvkbftizq822" if path == "SnsMicroMsg.db" else "wxid_8cm21ui550e729"
+            readTable = c.execute(
+                "SELECT type, userName, content, attrBuf from SnsInfo where userName not like 'v3_%@stranger'"
+            )
+            for ttype, username, content, attr in readTable:
+                feed = self._parse_wc_db_with_value(ttype, username, content, attr)
+                snsList.append(feed)
+            conn.close()
         snsList.sort(key=lambda x: x.timestamp, reverse=True)
         return snsList
 
@@ -922,7 +925,7 @@ class ImageDownload:
             time.sleep(2)
             print("下载重试中")
             res = requests.get(imageUrl)
-        custom_name = md5_hash + self.imageExt(res.content[0])
+        custom_name = md5_hash + ".jpg"
         custom_path = os.path.join(image_root, custom_name)
         with open(custom_path, "wb") as f:
             f.write(res.content)
@@ -1085,7 +1088,7 @@ class snsExportToHTML:
             conn.close()
 
     def getSnsBackground(self, wxid: str):
-        conn = sqlite3.connect(["SnsMicroMsg.db", "SnsMicroMsg(1).db"][xiao])
+        conn = sqlite3.connect("SnsMicroMsg.db")
         c = conn.cursor()
         try:
             imgUrl = c.execute(
@@ -1162,9 +1165,7 @@ class snsExportToHTML:
 if __name__ == "__main__":
     # os.system('''adb shell "su -c 'cp /data/data/com.tencent.mm/MicroMsg/867cc0443b3e8056c45b5e70aaa36197/SnsMicroMsg.db /sdcard/文件/SnsMicroMsg.db'" && adb pull /sdcard/文件/SnsMicroMsg.db SnsMicroMsg.db''')
     db = SnsParse()
-    xiao = 0
-    Account = ["wxid_05rvkbftizq822", "wxid_8cm21ui550e729"][xiao]
-    snsList = db._parse_wc_db(["SnsMicroMsg.db", "SnsMicroMsg(1).db"][xiao])
+    snsList = db._parse_wc_db(["SnsMicroMsg.db", "SnsMicroMsg(1).db"])
     ImageDownload().downloadImages(snsList)
     AvatarDownload().downloadAvatars(snsList)
     snsExportToHTML(snsList).to_html()
@@ -1172,7 +1173,7 @@ if __name__ == "__main__":
     json.dump(
         jsonList,
         open(
-            ["result\\database\\info.json", "result\\database\\info(1).json"][xiao],
+            "result\\database\\info.json",
             "w",
             encoding="utf-8",
         ),

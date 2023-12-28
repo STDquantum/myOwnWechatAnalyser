@@ -61,6 +61,7 @@ function renderPage(page) {
             { pattern: /\[阴险\]/g, replacement: '<img src="https://res.wx.qq.com/t/wx_fed/we-emoji/res/v1.2.8/assets/Expression/Expression_52@2x.png" id="阴险" class="emoji_img">' },
             { pattern: /\[亲亲\]/g, replacement: '<img src="https://res.wx.qq.com/t/wx_fed/we-emoji/res/v1.2.8/assets/Expression/Expression_53@2x.png" id="亲亲" class="emoji_img">' },
             { pattern: /\[可怜\]/g, replacement: '<img src="https://res.wx.qq.com/t/wx_fed/we-emoji/res/v1.2.8/assets/Expression/Expression_55@2x.png" id="可怜" class="emoji_img">' },
+            { pattern: /\[可憐\]/g, replacement: '<img src="https://res.wx.qq.com/t/wx_fed/we-emoji/res/v1.2.8/assets/Expression/Expression_55@2x.png" id="可怜" class="emoji_img">' },
             { pattern: /\[Whimper\]/g, replacement: '<img src="https://res.wx.qq.com/t/wx_fed/we-emoji/res/v1.2.8/assets/Expression/Expression_55@2x.png" id="可怜" class="emoji_img">' },
             { pattern: /\[笑脸\]/g, replacement: '<img src="https://res.wx.qq.com/t/wx_fed/we-emoji/res/v1.2.8/assets/newemoji/Happy.png" id="笑脸" class="emoji_img">' },
             { pattern: /\[生病\]/g, replacement: '<img src="https://res.wx.qq.com/t/wx_fed/we-emoji/res/v1.2.8/assets/newemoji/Sick.png" id="生病" class="emoji_img">' },
@@ -95,6 +96,7 @@ function renderPage(page) {
             { pattern: /\[爱心\]/g, replacement: '<img src="https://res.wx.qq.com/t/wx_fed/we-emoji/res/v1.2.8/assets/Expression/Expression_67@2x.png" id="爱心" class="emoji_img">' },
             { pattern: /\[心碎\]/g, replacement: '<img src="https://res.wx.qq.com/t/wx_fed/we-emoji/res/v1.2.8/assets/Expression/Expression_68@2x.png" id="心碎" class="emoji_img">' },
             { pattern: /\[拥抱\]/g, replacement: '<img src="https://res.wx.qq.com/t/wx_fed/we-emoji/res/v1.2.8/assets/Expression/Expression_79@2x.png" id="拥抱" class="emoji_img">' },
+            { pattern: /\[擁抱\]/g, replacement: '<img src="https://res.wx.qq.com/t/wx_fed/we-emoji/res/v1.2.8/assets/Expression/Expression_79@2x.png" id="拥抱" class="emoji_img">' },
             { pattern: /\[强\]/g, replacement: '<img src="https://res.wx.qq.com/t/wx_fed/we-emoji/res/v1.2.8/assets/Expression/Expression_80@2x.png" id="强" class="emoji_img">' },
             { pattern: /\[弱\]/g, replacement: '<img src="https://res.wx.qq.com/t/wx_fed/we-emoji/res/v1.2.8/assets/Expression/Expression_81@2x.png" id="弱" class="emoji_img">' },
             { pattern: /\[握手\]/g, replacement: '<img src="https://res.wx.qq.com/t/wx_fed/we-emoji/res/v1.2.8/assets/Expression/Expression_82@2x.png" id="握手" class="emoji_img">' },
@@ -124,7 +126,10 @@ function renderPage(page) {
             { pattern: /\[猪头\]/g, replacement: '<img src="https://res.wx.qq.com/t/wx_fed/we-emoji/res/v1.2.8/assets/Expression/Expression_63@2x.png" id="猪头" class="emoji_img">' },
             { pattern: /\[跳跳\]/g, replacement: '<img src="https://res.wx.qq.com/t/wx_fed/we-emoji/res/v1.2.8/assets/Expression/Expression_93@2x.png" id="跳跳" class="emoji_img">' },
             { pattern: /\[发抖\]/g, replacement: '<img src="https://res.wx.qq.com/t/wx_fed/we-emoji/res/v1.2.8/assets/Expression/Expression_94@2x.png" id="发抖" class="emoji_img">' },
-            { pattern: /\[转圈\]/g, replacement: '<img src="https://res.wx.qq.com/t/wx_fed/we-emoji/res/v1.2.8/assets/Expression/Expression_96@2x.png" id="转圈" class="emoji_img">' }
+            { pattern: /\[转圈\]/g, replacement: '<img src="https://res.wx.qq.com/t/wx_fed/we-emoji/res/v1.2.8/assets/Expression/Expression_96@2x.png" id="转圈" class="emoji_img">' },
+            { pattern: /🥹/g, replacement: '<img src="https://em-content.zobj.net/source/apple/354/face-holding-back-tears_1f979.png" id="Face Holding Back Tears" class="emoji_img">' },
+            { pattern: /🥲/g, replacement: '<img src="https://em-content.zobj.net/source/apple/354/smiling-face-with-tear_1f972.png" id="Smiling Face with Tear" class="emoji_img">' },
+            { pattern: //g, replacement: '<img src="https://em-content.zobj.net/source/apple/354/thumbs-up_1f44d.png" id="拇指向上" class="emoji_img">' },
         ];
 
         // 循环遍历替换规则
@@ -312,6 +317,17 @@ function renderPage(page) {
             snsItemBox.appendChild(senderName(sns));
             snsItemBox.appendChild(snsContent(sns));
             snsItemBox.appendChild(snsImgs(sns));
+            snsItemBox.appendChild(snsLocation(sns));
+            snsItemBox.appendChild(snsTime(sns));
+            if (sns.likes.length != 0) {
+                snsItemBox.appendChild(likesBox(sns));
+            }
+            if (sns.comments.length != 0) {
+                snsItemBox.appendChild(commentsBox(sns));
+            }
+        } else if (sns.type == 2) {
+            snsItemBox.appendChild(senderName(sns));
+            snsItemBox.appendChild(snsContent(sns));
             snsItemBox.appendChild(snsLocation(sns));
             snsItemBox.appendChild(snsTime(sns));
             if (sns.likes.length != 0) {
