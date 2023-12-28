@@ -150,6 +150,14 @@ img {
 .location {
     font-size: small;
     margin-top: 7px;
+}
+
+.location>a {
+    text-decoration: none;
+    color: rgb(91, 114, 181);
+}
+
+.location>a:hover, .location>a:active {
     color: rgb(91, 114, 181);
 }
 
