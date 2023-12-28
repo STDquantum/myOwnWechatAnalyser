@@ -1,20 +1,16 @@
-const itemsPerPage = 10; // 每页显示的元素个数
+const itemsPerPage = 1000; // 每页显示的元素个数
 let currentPage = 1; // 当前页
-var reachedBottom = false; // 到达底部的标记
-var lastScrollTop = 0;
+// var reachedBottom = false; // 到达底部的标记
+// var lastScrollTop = 0;
 
 function renderPage(page) {
     const snsContainer = document.getElementsByClassName('items')[0];
-    if (!reachedBottom) {
-        snsContainer.innerHTML = ''; // 清空容器
-        lastScrollTop = 0;
-    } else {
-        reachedBottom = false;
-    }
 
     // 计算当前页应该显示的元素范围
     const startIndex = (page - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
+
+    snsContainer.innerHTML = "";
 
     function replaceEmoji(text) {
         // 定义替换规则，可以根据需要添加更多规则
@@ -118,7 +114,7 @@ function renderPage(page) {
             { pattern: /\[便便\]/g, replacement: '<img src="https://res.wx.qq.com/t/wx_fed/we-emoji/res/v1.2.8/assets/Expression/Expression_75@2x.png" id="便便" class="emoji_img">' },
             { pattern: /\[月亮\]/g, replacement: '<img src="https://res.wx.qq.com/t/wx_fed/we-emoji/res/v1.2.8/assets/Expression/Expression_76@2x.png" id="月亮" class="emoji_img">' },
             { pattern: /\[太阳\]/g, replacement: '<img src="https://res.wx.qq.com/t/wx_fed/we-emoji/res/v1.2.8/assets/Expression/Expression_77@2x.png" id="太阳" class="emoji_img">' },
-            { pattern: /\[庆 祝\]/g, replacement: '<img src="https://res.wx.qq.com/t/wx_fed/we-emoji/res/v1.2.8/assets/newemoji/Party.png" id="庆祝" class="emoji_img">' },
+            { pattern: /\[庆祝\]/g, replacement: '<img src="https://res.wx.qq.com/t/wx_fed/we-emoji/res/v1.2.8/assets/newemoji/Party.png" id="庆祝" class="emoji_img">' },
             { pattern: /\[礼物\]/g, replacement: '<img src="https://res.wx.qq.com/t/wx_fed/we-emoji/res/v1.2.8/assets/Expression/Expression_78@2x.png" id="礼物" class="emoji_img">' },
             { pattern: /\[红包\]/g, replacement: '<img src="https://res.wx.qq.com/t/wx_fed/we-emoji/res/v1.2.8/assets/newemoji/2_09.png" id="红包" class="emoji_img">' },
             { pattern: /\[發\]/g, replacement: '<img src="https://res.wx.qq.com/t/wx_fed/we-emoji/res/v1.2.8/assets/newemoji/2_16.png" id="發" class="emoji_img">' },
@@ -180,7 +176,7 @@ function renderPage(page) {
         sns_imgs_one_pic.className = `sns-imgs one-pic`;
         const img_container_one_pic = document.createElement('div');
         img_container_one_pic.className = 'img-container one-pic'
-        img_container_one_pic.innerHTML = `<img src="${sns.custom_image_path[0]}" />`
+        img_container_one_pic.innerHTML = `<img src="${sns.custom_image_path[0]}"  onclick="showModal(this)" />`
         sns_imgs_one_pic.appendChild(img_container_one_pic);
         return sns_imgs_one_pic;
     }
@@ -190,7 +186,7 @@ function renderPage(page) {
         for (const img_path of sns.custom_image_path) {
             const img_container_one_pic = document.createElement('div');
             img_container_one_pic.className = 'img-container more-than-one-pics'
-            img_container_one_pic.innerHTML = `<img src="${img_path}" />`
+            img_container_one_pic.innerHTML = `<img src="${img_path}" onclick="showModal(this)" />`
             sns_imgs_more_than_one_pics.appendChild(img_container_one_pic);
         }
         return sns_imgs_more_than_one_pics;
@@ -229,7 +225,9 @@ function renderPage(page) {
             const like = document.createElement('div');
             like.className = 'like';
             like.innerHTML = `<img src="./avatar/${sns_like.sender_id}" />`
-            
+            like.onmouseover = showTooltip;
+            like.onmouseout = hideTooltip;
+
             const tooltip = document.createElement('div');
             tooltip.className = 'tooltip';
             tooltip.innerHTML = sns_like.sender_remark;
@@ -241,16 +239,66 @@ function renderPage(page) {
         }
         return like_grid;
     }
-    function snsFileBox(sns) {
-        const snsFileTag = document.createElement('div');
-        snsFileTag.className = `chat-file`;
-        if (sns.link !== '') {
-            snsFileTag.innerHTML = `
-                <a href="${sns.link}" target="_blank"><span>${sns.file_name}</span><img src="${sns.text}"/></a>`
-        } else {
-            snsFileTag.innerHTML = `<div><span>文件已丢失</span><img src="${sns.text}"/></div>`;
+    function commentsBox(sns) {
+        const comments_box = document.createElement('div');
+        comments_box.className = `comments-box`;
+
+        const comment_icon = document.createElement('div');
+        comment_icon.className = 'comment-icon';
+        comment_icon.innerHTML = "✉";
+
+        const comment_grid = document.createElement('div');
+        comment_grid.className = 'comment-grid';
+        for (const comment of sns.comments) {
+            const comment_container = document.createElement('div');
+            comment_container.className = "comment-container";
+
+            // begin .user-info
+            const user_info = document.createElement('div');
+            user_info.className = "user-info";
+
+            const avatar = document.createElement('img');
+            avatar.className = 'avatar';
+            avatar.src = `./avatar/${comment.sender_id}`;
+
+            // begin .user-info > .user-details
+            const user_details = document.createElement('div');
+            user_details.className = "user-details";
+
+            const nickname = document.createElement('div');
+            nickname.className = "nickname";
+            nickname.innerText = comment.sender_remark;
+
+            const comment_time = document.createElement('div');
+            comment_time.className = "comment-time";
+            comment_time.innerText = timestampToTime(comment.timestamp);
+
+            user_details.appendChild(nickname);
+            user_details.appendChild(comment_time);
+            // end .user-info > .user-details
+
+            user_info.appendChild(avatar);
+            user_info.appendChild(user_details);
+            // end .user-info
+
+            // begin .comment-text
+            const comment_text = document.createElement('div');
+            comment_text.className = "comment-text";
+            if (comment.ref_user_name != "") {
+                comment_text.innerHTML = `回复&nbsp;<div class="comment-refer-text">${comment.ref_user_name}</div>:&nbsp;${replaceEmoji(comment.content)}`;
+            } else {
+                comment_text.innerHTML = replaceEmoji(comment.content);
+            }
+            // end .comment-text
+
+            comment_container.appendChild(user_info);
+            comment_container.appendChild(comment_text);
+            comment_grid.appendChild(comment_container);
         }
-        return snsFileTag;
+
+        comments_box.appendChild(comment_icon);
+        comments_box.appendChild(comment_grid);
+        return comments_box;
     }
 
     // 从数据列表中取出对应范围的元素并添加到容器中
@@ -266,25 +314,21 @@ function renderPage(page) {
             snsItemBox.appendChild(snsImgs(sns));
             snsItemBox.appendChild(snsLocation(sns));
             snsItemBox.appendChild(snsTime(sns));
-            snsItemBox.appendChild(likesBox(sns));
+            if (sns.likes.length != 0) {
+                snsItemBox.appendChild(likesBox(sns));
+            }
+            if (sns.comments.length != 0) {
+                snsItemBox.appendChild(commentsBox(sns));
+            }
         }
         snsItem.className = "item";
         snsItem.appendChild(snsAvatarBox);
         snsItem.appendChild(snsItemBox);
         snsContainer.appendChild(snsItem);
     }
-    processLikeTooltip();
-    document.getElementsByTagName("body")[0].scrollTop = lastScrollTop;
-    updatePaginationInfo();
+    // document.getElementsByTagName("body")[0].scrollTop = lastScrollTop;
+    // updatePaginationInfo();
     refreshMediaListener();
-}
-
-function processLikeTooltip() {
-    const likes = document.getElementsByClassName("like");
-    for (const like of likes) {
-        like.onmouseover = showTooltip;
-        like.onmouseout = hideTooltip;
-    }
 }
 
 function prevPage() {
@@ -323,6 +367,7 @@ function gotoPage() {
 
 
 function checkScroll() {
+    return;
     var snsContainer = document.getElementsByTagName("body")[0];
 
     // 检查滚动条是否滑到底部

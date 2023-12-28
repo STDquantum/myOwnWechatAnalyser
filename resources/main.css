@@ -7,14 +7,7 @@ body {
     width: 450px;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
     border: 0.5px solid #e0e0e0;
-}
-
-img {
-    width: 100%;
-    height: auto;
-    display: block;
 }
 
 .sns-header {
@@ -119,6 +112,10 @@ img {
     max-width: 239px;
 }
 
+.img-container.one-pic>img {
+    max-width: 239px;
+}
+
 .img-container.more-than-one-pics {
     aspect-ratio: 1;
     width: 100%;
@@ -174,7 +171,7 @@ img {
     padding: 5px;
     border-radius: 5px;
     white-space: nowrap;
-    z-index: 1;
+    z-index: 9999;
 }
 
 .like-icon {
@@ -271,8 +268,35 @@ img {
     font-size: 14px;
 }
 
+.comment-text>.emoji_img {
+    width: 18px;
+    height: 18px;
+    margin-top: -4px;
+}
+
 .comment-refer-text {
     color: rgb(67, 86, 145);
     font-weight: bold;
     cursor: pointer;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.modal-image {
+    display: block;
+    max-width: 90%;
+    max-height: 90%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
