@@ -930,7 +930,7 @@ class ImageDownload:
         with open(custom_path, "wb") as f:
             f.write(res.content)
         os.utime(custom_path, (timestamp, timestamp))
-        custom_path = "./image/" + os.path.basename(custom_path)
+        custom_path = "./images/" + os.path.basename(custom_path)
         print(custom_path)
         return custom_path
 
