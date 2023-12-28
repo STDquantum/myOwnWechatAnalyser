@@ -945,6 +945,50 @@ class ImageDownload:
 
             sns.custom_link_image = self.downloadImage(sns.link_image, sns.timestamp)
 
+class VideoDownload:
+    def __init__(self) -> None:
+        pass
+
+    def downloadvideo(self, videoUrl: str | None, timestamp: int):
+        if videoUrl is None or videoUrl == "":
+            return None
+        print(videoUrl)
+        md5 = hashlib.md5()
+        md5.update(videoUrl.encode("utf-8"))
+        md5_hash = md5.hexdigest()
+        video_root = "./result/videos"
+        custom_path = os.path.join(video_root, md5_hash + ".mp4")
+        if os.path.exists(custom_path):
+            os.utime(custom_path, (timestamp, timestamp))
+            custom_path = "./videos/" + os.path.basename(custom_path)
+            print(custom_path)
+            return custom_path
+        res = requests.get(videoUrl)
+        while res.status_code != 200:
+            time.sleep(2)
+            print("下载重试中")
+            res = requests.get(videoUrl)
+        custom_name = md5_hash + ".mp4"
+        custom_path = os.path.join(video_root, custom_name)
+        with open(custom_path, "wb") as f:
+            f.write(res.content)
+        os.utime(custom_path, (timestamp, timestamp))
+        custom_path = "./videos/" + os.path.basename(custom_path)
+        print(custom_path)
+        return custom_path
+
+    def downloadvideos(self, snss: list[Feed]):
+        return
+        os.makedirs(".\\result\\videos", exist_ok=True)
+        for sns in snss:
+            if sns.sender_id != sns.account_id:
+                continue
+            if sns.sender_id == "wxid_05rvkbftizq822":
+                continue
+            sns.custom_video_path = []
+            for video in sns.video_path:
+                sns.custom_video_path.append(self.downloadvideo(video, sns.timestamp))
+
 
 class AvatarDownload:
     def __init__(self) -> None:
@@ -1167,6 +1211,7 @@ if __name__ == "__main__":
     db = SnsParse()
     snsList = db._parse_wc_db(["SnsMicroMsg.db", "SnsMicroMsg(1).db"])
     ImageDownload().downloadImages(snsList)
+    VideoDownload().downloadvideos(snsList)
     AvatarDownload().downloadAvatars(snsList)
     snsExportToHTML(snsList).to_html()
     jsonList = to_json(snsList)
