@@ -264,7 +264,7 @@ body {
 
 .comment-text {
     margin-left: 35px;
-    display: flex;
+    display: inline;
     font-size: 14px;
 }
 
@@ -278,6 +278,7 @@ body {
     color: rgb(67, 86, 145);
     font-weight: bold;
     cursor: pointer;
+    display: inline;
 }
 
 .modal {
