@@ -822,7 +822,11 @@ class SnsParse:
             conn = sqlite3.connect(path)
             c = conn.cursor()
             global Account
-            Account = "wxid_05rvkbftizq822" if path == "SnsMicroMsg.db" else "wxid_8cm21ui550e729"
+            Account = (
+                "wxid_05rvkbftizq822"
+                if path == "SnsMicroMsg.db"
+                else "wxid_8cm21ui550e729"
+            )
             readTable = c.execute(
                 "SELECT type, userName, content, attrBuf from SnsInfo where userName not like 'v3_%@stranger'"
             )
@@ -944,6 +948,7 @@ class ImageDownload:
                 sns.custom_image_path.append(self.downloadImage(image, sns.timestamp))
 
             sns.custom_link_image = self.downloadImage(sns.link_image, sns.timestamp)
+
 
 class VideoDownload:
     def __init__(self) -> None:
@@ -1191,7 +1196,9 @@ class snsExportToHTML:
         with open(".\\resources\\template.html", "r", encoding="utf-8") as f:
             htmlhead, htmlend = f.read().split("/* 分割线 */")
         f = open(".\\result\\index.html", "w", encoding="utf-8")
-        output_str = htmlhead.replace("这里是标题", f"{self.snss[0].account_remark}的朋友圈").replace("这里是朋友圈ownername", self.snss[0].account_remark)
+        output_str = htmlhead.replace(
+            "这里是标题", f"{self.snss[0].account_remark}的朋友圈"
+        ).replace("这里是朋友圈ownername", self.snss[0].account_remark)
         self.getSnsBackground(self.snss[0].account_id)
         self.getSnsOwnerAvatar(self.snss[0].account_id)
         for sns in self.snss:
@@ -1209,7 +1216,8 @@ class snsExportToHTML:
 if __name__ == "__main__":
     # os.system('''adb shell "su -c 'cp /data/data/com.tencent.mm/MicroMsg/867cc0443b3e8056c45b5e70aaa36197/SnsMicroMsg.db /sdcard/文件/SnsMicroMsg.db'" && adb pull /sdcard/文件/SnsMicroMsg.db SnsMicroMsg.db''')
     db = SnsParse()
-    snsList = db._parse_wc_db(["SnsMicroMsg.db", "SnsMicroMsg(1).db"])
+    # snsList = db._parse_wc_db(["SnsMicroMsg.db", "SnsMicroMsg(1).db"])
+    snsList = db._parse_wc_db(["SnsMicroMsg(1).db"])
     ImageDownload().downloadImages(snsList)
     VideoDownload().downloadvideos(snsList)
     AvatarDownload().downloadAvatars(snsList)
@@ -1218,7 +1226,7 @@ if __name__ == "__main__":
     json.dump(
         jsonList,
         open(
-            "result\\database\\info.json",
+            "result\\database\\info1.json",
             "w",
             encoding="utf-8",
         ),
